@@ -7,8 +7,8 @@ export default function NavBar(){
             <ol>
                 <li><Link to={"/"}>Home</Link></li>
                 <li><Link to={"/login"}>Login</Link></li>
-                <li><Link to={"/version_history"}>Version History</Link></li>
-                <li><Link to={"/document"}>Documents</Link></li>
+                <li><Link to={"/version-history"}>Version History</Link></li>
+                <li><Link to={"/my-documents"}>Documents</Link></li>
             </ol>
         </div>
     )

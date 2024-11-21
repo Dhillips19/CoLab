@@ -4,6 +4,7 @@ import * as Y from 'yjs';
 import express from 'express'
 import connectDB from './DB/connect.js';
 import createUserRoute from './routes/createUser.js';
+import { loadOrCreateDocument, saveDocument } from './utils/documentHandlers.js';
 
 const app = express();
 // connect to MongoDB Database
@@ -25,34 +26,30 @@ const io = new Server(server, {
     cors: CORS_OPTIONS,
 });
 
-// create Y.js document to hold changes
-const docs = new Map();
-
 // deal with ydoc updates and log disconnection when user disconnects
 io.on('connection', (socket) => {
     console.log('User connected');
 
-    socket.on('joinDocumentRoom', (documentId) => {
+    // user joins room based on document id
+    socket.on('joinDocumentRoom', async (documentId) => {
         
         console.log(`User joined document: ${documentId}`);
         
-        // check if doc exists
-        if (!docs.has(documentId)) {
-            docs.set(documentId, new Y.Doc());
-        }
-
-        const doc = docs.get(documentId);
-
+        // load or create document              
+        const ydoc = await loadOrCreateDocument(documentId);
+        
         // send initial doc state to new client
-        socket.emit('initialState', Y.encodeStateAsUpdate(doc));
-
-        // listen for doc updates, apply the update to the ydoc, and broadcast the change to clients
-        socket.on('update', (update) => {
-            Y.applyUpdate(doc, new Uint8Array(update));
-            socket.to(documentId).emit('update', update);
-        });
-
+        socket.emit('initialState', Y.encodeStateAsUpdate(ydoc));
+        
+        // join client to document room
         socket.join(documentId);
+
+        // listen for doc updates, apply the update to the ydoc, and broadcast the change to clients in the room
+        socket.on('update', async (update) => {
+            Y.applyUpdate(ydoc, new Uint8Array(update));
+            socket.to(documentId).emit('update', update);
+            await saveDocument(documentId, ydoc);
+        });
 
         // log when user disconnects from server
         socket.on('disconnect', () => {

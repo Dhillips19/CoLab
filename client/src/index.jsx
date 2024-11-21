@@ -4,8 +4,9 @@ import './styles.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Home from './pages/home';
 import Login from './pages/login';
-import Version_History from './pages/version_history';
+import Version from './pages/versionHistory';
 import Document from './pages/document';
+import MyDocuments from './pages/myDocuments';
 
 const router = createBrowserRouter([
   {
@@ -21,8 +22,12 @@ const router = createBrowserRouter([
     element: <Document/>
   },
   {
-    path: "/version_history",
-    element: <Version_History/>
+    path: "/version-history",
+    element: <Version/>
+  },
+  {
+    path: "/my-documents",
+    element: <MyDocuments/>
   }
 ])
 
