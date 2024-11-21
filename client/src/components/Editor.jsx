@@ -4,9 +4,12 @@ import * as Y from 'yjs';
 import { QuillBinding } from 'y-quill';
 import { io } from 'socket.io-client';
 import 'quill/dist/quill.snow.css';
+import { useParams } from 'react-router-dom';
 
 // function to create and manage updates within editor
 export default function Editor() {
+
+    const { documentId } = useParams();
 
     // create quill editor
     const wrapperRef = useCallback((wrapper) => {
@@ -27,6 +30,9 @@ export default function Editor() {
 
         // create connection to socket
         const socket = io('http://localhost:3001');
+
+        //join room for document id
+        socket.emit('joinDocumentRoom', documentId);
 
         // create y.js document, get text from this doc, and bind the text to the quill editor
         const ydoc = new Y.Doc();

@@ -26,23 +26,37 @@ const io = new Server(server, {
 });
 
 // create Y.js document to hold changes
-const doc = new Y.Doc();
+const docs = new Map();
 
 // deal with ydoc updates and log disconnection when user disconnects
 io.on('connection', (socket) => {
     console.log('User connected');
 
-    // send initial doc state to new client
-    socket.emit('initialState', Y.encodeStateAsUpdate(doc));
+    socket.on('joinDocumentRoom', (documentId) => {
+        
+        console.log(`User joined document: ${documentId}`);
+        
+        // check if doc exists
+        if (!docs.has(documentId)) {
+            docs.set(documentId, new Y.Doc());
+        }
 
-    // listen for doc updates, apply the update to the ydoc, and broadcast the change to clients
-    socket.on('update', (update) => {
-        Y.applyUpdate(doc, new Uint8Array(update));
-        socket.broadcast.emit('update', update);
-    });
+        const doc = docs.get(documentId);
 
-    // log when user disconnects from server
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
+        // send initial doc state to new client
+        socket.emit('initialState', Y.encodeStateAsUpdate(doc));
+
+        // listen for doc updates, apply the update to the ydoc, and broadcast the change to clients
+        socket.on('update', (update) => {
+            Y.applyUpdate(doc, new Uint8Array(update));
+            socket.to(documentId).emit('update', update);
+        });
+
+        socket.join(documentId);
+
+        // log when user disconnects from server
+        socket.on('disconnect', () => {
+            console.log(`User disconnected from document: ${documentId}`);
+        });
     });
 });
