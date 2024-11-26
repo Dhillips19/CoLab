@@ -1,5 +1,5 @@
 import * as Y from 'yjs';
-import Document from '../DB/document_schema.js';
+import Document from '../DB/models/documentModel.js';
 
 // checks if documentId is in DB and returns true or false
 export async function isDocumentInDB(documentId) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import Quill from 'quill';
 import * as Y from 'yjs';
 import { QuillBinding } from 'y-quill';
