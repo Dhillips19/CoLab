@@ -4,7 +4,7 @@ import * as Y from 'yjs';
 import express from 'express'
 import connectDB from './DB/connect.js';
 import userRoutes from './routes/userRoutes.js';
-import { loadOrCreateDocument, saveDocument } from './utils/documentHandlers.js';
+import { loadOrCreateDocument, saveDocument } from './controllers/documentController.js';
 
 const app = express();
 // connect to MongoDB Database
