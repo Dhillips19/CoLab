@@ -6,7 +6,9 @@ import connectDB from './DB/connect.js';
 import userRoutes from './routes/userRoutes.js';
 import { loadOrCreateDocument, saveDocument } from './controllers/documentController.js';
 
+// create express app
 const app = express();
+
 // connect to MongoDB Database
 connectDB();
 
@@ -15,7 +17,6 @@ app.use(express.json());
 
 // user route
 app.use('/api/users', userRoutes)
-
 
 // create server and listen on PORT 3001
 const server = app.listen(PORT, () => {
@@ -42,7 +43,7 @@ io.on('connection', (socket) => {
                 const ydoc = await loadOrCreateDocument(documentId); // load or create document in DB
                 roomData[documentId] = { ydoc, timer: null }; // add ydoc to roomData object
 
-                // ave the document state to the DB every 10 seconds
+                // save the document state to the DB every 10 seconds
                 roomData[documentId].timer = setInterval(async () => {
                     console.log(`Saving document ${documentId} to database.`);
                     await saveDocument(documentId, roomData[documentId].ydoc);

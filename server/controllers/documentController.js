@@ -22,7 +22,6 @@ export async function isDocumentInDB(documentId) {
 //load document if it exists or create document if it doesn't
 export async function loadOrCreateDocument(documentId) {
     try {
-
         //does doc exist
         const exists = await isDocumentInDB(documentId);
 
@@ -51,7 +50,7 @@ export async function loadOrCreateDocument(documentId) {
 // function to save ydoc to document schema
 export async function saveDocument(documentId, ydoc) {
     try {
-        //assign state value to a an empty Buffer value
+        // store the document state sent via the ydoc to state variable
         const state = Buffer.from(Y.encodeStateAsUpdate(ydoc));
 
         //update document
@@ -59,7 +58,6 @@ export async function saveDocument(documentId, ydoc) {
             { documentId }, //find doc id
             { state } // update state field
         );
-
         console.log(`Document ${documentId} updated in DB`);
 
     } catch (error) {
