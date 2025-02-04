@@ -1,5 +1,6 @@
 import * as Y from 'yjs';
 import Document from '../DB/models/documentModel.js';
+import DocumentVersion from '../DB/models/documentVersionModel.js'
 
 // checks if documentId is in DB and returns true or false
 export async function isDocumentInDB(documentId) {
@@ -61,6 +62,115 @@ export async function saveDocument(documentId, ydoc) {
         console.log(`Document ${documentId} updated in DB`);
 
     } catch (error) {
-        console.error(`Error saving document ${documentId}:`, error);
+        console.error(`Error saving document ${documentId}:`, error.message);
     }
 }
+
+export async function saveVersion(documentId, ydoc) {
+    try {
+        const snapshot = Y.snapshot(ydoc);
+        const snapshotBuffer = Buffer.from(Y.encodeSnapshot(snapshot));
+
+        await DocumentVersion.create({
+            documentId,
+            snapshot: snapshotBuffer
+        });
+
+        console.log(`Version saved for document ${documentId}`);
+
+    } catch (error) {
+        console.error(`Error saving version for ${documentId}`, error.message)
+    }
+}
+
+export async function getVersions(documentId) {
+    try {
+        const versions = await DocumentVersion.find({ document }).sort({createdAt: -1});
+
+        if (!versions.length) {
+            return {error: `No versions for ${documentId}`}
+        }
+
+        return versions;
+    
+    } catch (error) {
+        console.error(`Error retrieving document versions for ${documentId}`, error.message);
+    }
+}
+
+export async function restoreVersion(documentId, versionId) {
+    try {
+        const version = await DocumentVersion.findById(versionId);
+        if (!version) {
+            return { error: "Version not found"};
+        }
+
+        const ydoc = new Y.Doc();
+        const snapshot = Y.decodeSnapshot(new Uint8Array(version.snapshot))
+
+        Y.applyUpdate(ydoc, snapshot);
+
+        const newState = Buffer.from(Y.encodeStateAsUpdate(ydoc));
+        await Document.updateOne({ documentId }, { state: newState});
+
+        console.log(`Document ${documentId} restored to version ${versionId}`);
+    
+    } catch (error) {
+        console.error(`Error restoring version ${versionId} for ${documentId}`, error.message);
+    }
+}
+
+// const documentController = {
+//     loadOrCreateDocument: async (req, res) => {
+//         try {
+//             const { documentId } = req.params;
+//             const ydoc = new Y.Doc();
+
+//             let docData = await Document.findOne({ documentId }); //find document by id and assign to docData
+
+//             if (docData) {
+//                 Y.applyUpdate(ydoc, new Uint8Array(docData.state)); //assign state of doc to ydoc
+//                 console.log(`Document ${documentId} loaded from database.`);
+//             } else {
+//                 console.log(`Document ${documentId} does not exist. Creating a new one.`);
+//                 const state = Buffer.from(Y.encodeStateAsUpdate(ydoc)); //assign state variable to an empty Buffer value
+//                 docData = await Document.create({ documentId, state }); //add new blank document to DB
+//             }
+
+//             res.json({ documentId, state: Array.from(Y.encodeStateAsUpdate(ydoc))})
+
+//         } catch (error) {
+//             console.error(`Error handling document ${documentId}:`, error.message);
+//             res.status(500).json({ error: 'Server error. Loading/Creating Document' });
+//         }
+//     },
+
+//     saveDocument: async (req, res) => {
+        
+//         try {
+
+//             const { documentId } = req.params;
+//             const { state } = req.body;
+//             const stateBuffer = Buffer.from(state);
+
+//             const docData = await Document.findOne({ documentId });
+
+//             if (!docData) {
+//                 return res.status(404).json({ error: "Document not found."});
+//             }
+
+//             //update document
+//             await Document.updateOne(
+//                 { documentId }, //find doc id
+//                 { state: stateBuffer, lastUpdated: Date.now() } // update state field
+//             );
+
+//             console.log(`Document ${documentId} saved`);
+//             res.json({ message: 'Document saved successfully' });
+    
+//         } catch (error) {
+//             console.error(`Error saving document:`, error.message);
+//             res.status(500).json({ error: 'Server error. Document could not be saved' });
+//         }
+//     }        
+// }

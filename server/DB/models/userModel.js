@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
 
 const userModel = new mongoose.Schema({
-    id: {
-        type: String,
-        required: true,
-        unique: true,
-        default: () => new mongoose.Types.ObjectId().toString(),
-    },
+    // id: {
+    //     type: String,
+    //     required: true,
+    //     unique: true,
+    //     default: () => new mongoose.Types.ObjectId().toString(),
+    // },
     email: {
         type: String,
         required: true,

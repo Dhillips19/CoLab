@@ -10,6 +10,10 @@ const DocumentSchema = new mongoose.Schema({
         type: Buffer, 
         required: true
     },
+    // lastUpdated: {
+    //     type: Date,
+    //     default: Date.now
+    // },
 });
 
 const Document = mongoose.model('Document', DocumentSchema);
