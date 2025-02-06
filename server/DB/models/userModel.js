@@ -1,28 +1,20 @@
 import mongoose from 'mongoose';
 
 const userModel = new mongoose.Schema({
-    // id: {
-    //     type: String,
-    //     required: true,
-    //     unique: true,
-    //     default: () => new mongoose.Types.ObjectId().toString(),
-    // },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-    },
-    password: {
-        type: String,
-        required: true,
-    },
     username: {
         type: String,
         required: true,
         unique: true,
-        trim: true,
     },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+    },
+    password: {
+        type: String,
+        required: true,
+    }
 }, {
     timestamps: true,
 });

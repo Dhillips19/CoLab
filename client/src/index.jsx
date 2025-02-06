@@ -2,32 +2,37 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Home from './pages/home';
-import Login from './pages/login';
-import Version from './pages/versionHistory';
-import Document from './pages/document';
-import MyDocuments from './pages/myDocuments';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import VersionHistoryPage from './pages/VersionHistoryPage';
+import DocumentPage from './pages/DocumentPage';
+import MyDocumentsPage from './pages/MyDocumentsPage';
 
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Login/>
+    element: <LoginPage/>
+  },
+  {
+    path: "/Register",
+    element: <RegisterPage/>
   },
   {
     path: "/",
-    element: <Home/>
+    element: <HomePage/>
   },
   {
     path: "/document/:documentId",
-    element: <Document/>
+    element: <DocumentPage/>
   },
   {
     path: "/version-history",
-    element: <Version/>
+    element: <VersionHistoryPage/>
   },
   {
     path: "/my-documents",
-    element: <MyDocuments/>
+    element: <MyDocumentsPage/>
   }
 ])
 

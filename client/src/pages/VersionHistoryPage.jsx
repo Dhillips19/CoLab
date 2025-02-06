@@ -1,7 +1,7 @@
 import React from 'react'
 import Navbar from '../components/NavBar';
 
-export default function Version() {
+export default function VersionHistoryPage() {
     return (
         <div>
             <Navbar/>

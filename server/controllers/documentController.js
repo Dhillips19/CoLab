@@ -66,60 +66,6 @@ export async function saveDocument(documentId, ydoc) {
     }
 }
 
-export async function saveVersion(documentId, ydoc) {
-    try {
-        const snapshot = Y.snapshot(ydoc);
-        const snapshotBuffer = Buffer.from(Y.encodeSnapshot(snapshot));
-
-        await DocumentVersion.create({
-            documentId,
-            snapshot: snapshotBuffer
-        });
-
-        console.log(`Version saved for document ${documentId}`);
-
-    } catch (error) {
-        console.error(`Error saving version for ${documentId}`, error.message)
-    }
-}
-
-export async function getVersions(documentId) {
-    try {
-        const versions = await DocumentVersion.find({ document }).sort({createdAt: -1});
-
-        if (!versions.length) {
-            return {error: `No versions for ${documentId}`}
-        }
-
-        return versions;
-    
-    } catch (error) {
-        console.error(`Error retrieving document versions for ${documentId}`, error.message);
-    }
-}
-
-export async function restoreVersion(documentId, versionId) {
-    try {
-        const version = await DocumentVersion.findById(versionId);
-        if (!version) {
-            return { error: "Version not found"};
-        }
-
-        const ydoc = new Y.Doc();
-        const snapshot = Y.decodeSnapshot(new Uint8Array(version.snapshot))
-
-        Y.applyUpdate(ydoc, snapshot);
-
-        const newState = Buffer.from(Y.encodeStateAsUpdate(ydoc));
-        await Document.updateOne({ documentId }, { state: newState});
-
-        console.log(`Document ${documentId} restored to version ${versionId}`);
-    
-    } catch (error) {
-        console.error(`Error restoring version ${versionId} for ${documentId}`, error.message);
-    }
-}
-
 // const documentController = {
 //     loadOrCreateDocument: async (req, res) => {
 //         try {

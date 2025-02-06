@@ -3,11 +3,18 @@ import { PORT, CORS_OPTIONS} from './config.js'
 import * as Y from 'yjs';
 import express from 'express'
 import connectDB from './DB/connect.js';
-import userRoutes from './routes/userRoutes.js';
 import { loadOrCreateDocument, saveDocument } from './controllers/documentController.js';
+import userRouter from './routes/authRoutes.js';
+import cors from 'cors';
 
 // create express app
 const app = express();
+
+app.use(cors({
+    origin: "http://localhost:3000", // Allow frontend to make requests
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 // connect to MongoDB Database
 connectDB();
@@ -16,11 +23,11 @@ connectDB();
 app.use(express.json());
 
 // user route
-app.use('/api/users', userRoutes)
+app.use('/api/auth', userRouter)
 
 // create server and listen on PORT 3001
 const server = app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
+    console.log(`Server listening on port ${PORT}`); 
 });
 
 // set up socket.io server

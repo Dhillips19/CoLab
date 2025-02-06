@@ -38,14 +38,17 @@ export default function Editor() {
         socket.on('initialState', (update) => { 
             Y.applyUpdate(ydoc, new Uint8Array(update));
         }); 
+
         // listen for updates from server and apply the update to local ydoc
         socket.on('update', (update) => {  
             Y.applyUpdate(ydoc, new Uint8Array(update));
         });
+
         // when the local ydoc is updated, the update is broadcast to the server
         ydoc.on('update', (update) => {
             socket.emit('update', update);
         });
+
         // cleanup 
         return() => {
             socket.disconnect()
