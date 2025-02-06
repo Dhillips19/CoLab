@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { Server } from 'socket.io';
 import { PORT, CORS_OPTIONS} from './config.js'
 import * as Y from 'yjs';

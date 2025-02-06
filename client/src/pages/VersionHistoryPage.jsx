@@ -1,10 +1,10 @@
 import React from 'react'
-import Navbar from '../components/NavBar';
+import NavBar from '../components/NavBar/NavBar';
 
 export default function VersionHistoryPage() {
     return (
         <div>
-            <Navbar/>
+            <NavBar/>
             <h1>Version History</h1>
         </div>
     )

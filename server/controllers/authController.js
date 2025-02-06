@@ -45,23 +45,25 @@ export const registerUser = async (req, res) => {
 // Log user in
 export const loginUser = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { email, password } = req.body;
 
-        // Check unique username
-        let user = await User.findOne({ username });
+        // Validate email
+        let user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: "Incorrect Username"});
+            return res.status(400).json({ message: "Incorrect Email"});
         }
 
-        // Check unique email
+        // Validate password
         let isPasswordCorrect = await bcrypt.compare(password, user.password)
         if (!isPasswordCorrect) {
             return res.status(400).json({ message: "Incorrect Password"});
         }
 
+        console.log('JWT_SECRET:', process.env.JWT_SECRET);
+
         // Generate JWT token
         const token = jwt.sign(
-            { id: user._id }, 
+            { id: user._id, username: user.username }, 
             process.env.JWT_SECRET, 
             { expiresIn: "1h" }
         );

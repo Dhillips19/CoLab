@@ -5,6 +5,7 @@ import { QuillBinding } from 'y-quill';
 import { io } from 'socket.io-client';
 import 'quill/dist/quill.snow.css';
 import { useParams } from 'react-router-dom';
+import './Editor.css';
 
 // function to create and manage updates within editor
 export default function Editor() {
@@ -55,5 +56,5 @@ export default function Editor() {
         }
     }, [])
     // editor is created inside this div
-    return <div className="container" ref= { wrapperRef }></div>
+    return <div className="editor-container" ref= { wrapperRef }></div>
 }

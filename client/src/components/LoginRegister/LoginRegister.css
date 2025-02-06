@@ -1,9 +1,22 @@
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;  
+    align-items: center;      
+    height: 100vh;            
+    background-color: #f8f9fa; 
+}
+
 .container {
     display: flex;
     flex-direction: column;
-    margin: auto;
-    margin-top: 150px;
-    max-width: 90%; /* Responsive */
+    max-width: 90%;
     width: 600px;
     background: white;
     padding: 30px;
@@ -21,7 +34,7 @@
 }
 
 .text {
-    color: #333; /* Darker color for better readability */
+    color: #333; 
     font-size: 40px;
     font-weight: 700;
 }
@@ -29,7 +42,7 @@
 .underline {
     width: 61px;
     height: 6px;
-    background: #6a0dad; /* Purple for better visibility */
+    background: #6a0dad; 
     border-radius: 9px;
 }
 
@@ -60,9 +73,9 @@
 }
 
 .input input {
-    flex: 1; /* Makes input expand */
+    flex: 1; 
     height: 40px;
-    width: 100%; /* More flexible */
+    width: 100%; 
     background: transparent;
     border: none;
     outline: none;
@@ -114,7 +127,7 @@
 .gray {
     background: #d3d3d3;
     color: #888;
-    pointer-events: none; /* Prevent clicking */
+    pointer-events: none;
 }
 
 @media screen and (max-width: 600px) {
@@ -136,4 +149,5 @@
         height: 45px;
     }
 }
+
 

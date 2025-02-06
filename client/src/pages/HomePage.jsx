@@ -1,5 +1,5 @@
 import React from 'react';
-import Navbar from '../components/NavBar';
+import NavBar from '../components/NavBar/NavBar';
 import { useNavigate } from 'react-router-dom';
 import { v4 } from 'uuid';
 
@@ -14,7 +14,7 @@ export default function HomePage() {
 
     return (
         <div>
-            <Navbar/>
+            <NavBar/>
             <h1>home</h1>
             <button onClick={createDocument}>Create Document</button>
         </div>

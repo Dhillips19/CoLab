@@ -1,0 +1,28 @@
+.container .ql-editor {
+    width: 21cm;
+    min-height: 29.7cm;
+    padding: 2.5cm;
+    margin: 3rem;
+    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.5);
+    background-color: white;
+}
+
+.container .ql-container {
+    border: none;
+    display: flex;
+    justify-content: center;
+}
+
+.container .ql-toolbar {
+    display: flex;
+    justify-content: center;
+    position: sticky;
+    top: var(--nav-bar-height);
+    z-index: 1;
+    border-radius: 1rem;
+    border-color: rgb(223, 225, 226);
+    padding: 0.5rem;
+    margin-left: 7rem;
+    margin-right: 7rem;
+    background-color: rgb(223, 225, 226);
+}
