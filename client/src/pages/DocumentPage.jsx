@@ -1,16 +1,17 @@
+// src/pages/DocumentPage.jsx
 import React from 'react';
 import NavBar from '../components/NavBar/NavBar';
 import Editor from '../components/Editor/Editor';
-import { useParams } from 'react-router-dom';
+import { SocketProvider } from '../socket/SocketContext'; // Import the SocketProvider
 
 export default function DocumentPage() {
-    const { documentId } = useParams();
 
-    return  (
-        <div>
-            <NavBar/>
-            <h1>editing doc with id: {documentId}</h1>
-            <Editor/>
-        </div>
-    )
+    return (
+        <SocketProvider> {/* Wrap with SocketProvider */}
+            <div>
+                <NavBar />
+                <Editor />
+            </div>
+        </SocketProvider>
+    );
 }

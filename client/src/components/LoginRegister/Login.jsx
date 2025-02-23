@@ -3,9 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
 import './LoginRegister.css';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // For navigation after login
+import { useNavigate } from 'react-router-dom';
 
+// login 
 const Login = () => {
+    
     const [formData, setFormData] = useState({ 
         email: '', 
         password: '' });
@@ -32,7 +34,7 @@ const Login = () => {
 
             setSuccess("User logged in successfully!");
 
-            // Redirect to a protected route (e.g., dashboard)
+            // Redirect to a protected route
             try {
                 navigate('/');    
             } catch (error) {

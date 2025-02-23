@@ -10,6 +10,18 @@ const DocumentSchema = new mongoose.Schema({
         type: Buffer, 
         required: true
     },
+    documentTitle: {
+        type: String,
+        required: true,
+    },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    collaborators: [{
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+    }]
     // lastUpdated: {
     //     type: Date,
     //     default: Date.now

@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+ import dotenv from 'dotenv';
 dotenv.config();
 
 import { Server } from 'socket.io';
@@ -6,8 +6,9 @@ import { PORT, CORS_OPTIONS} from './config.js'
 import * as Y from 'yjs';
 import express from 'express'
 import connectDB from './DB/connect.js';
-import { loadOrCreateDocument, saveDocument } from './controllers/documentController.js';
+import { loadDocument, saveDocument } from './controllers/documentController.js';
 import userRouter from './routes/authRoutes.js';
+import documentRouter from './routes/documentRoutes.js';
 import cors from 'cors';
 
 // create express app
@@ -25,8 +26,9 @@ connectDB();
 //parse json from incoming api requests
 app.use(express.json());
 
-// user route
+// routes
 app.use('/api/auth', userRouter)
+app.use('/api/documents', documentRouter);
 
 // create server and listen on PORT 3001
 const server = app.listen(PORT, () => {
@@ -48,10 +50,10 @@ io.on('connection', (socket) => {
     socket.on('joinDocumentRoom', async (documentId) => {
         try {
 
-            // load or create the yjs document for the room for the first user in the room
+            // load the yjs document for the room for the first user in the room
             if (!roomData[documentId]) {
-                const ydoc = await loadOrCreateDocument(documentId); // load or create document in DB
-                roomData[documentId] = { ydoc, timer: null }; // add ydoc to roomData object
+                const { ydoc, documentTitle } = await loadDocument(documentId); // load document from DB
+                roomData[documentId] = { ydoc, documentTitle, timer: null }; // add ydoc to roomData object
 
                 // save the document state to the DB every 10 seconds
                 roomData[documentId].timer = setInterval(async () => {
@@ -61,7 +63,7 @@ io.on('connection', (socket) => {
             }
 
             // retrieve ydoc from roomData object
-            const { ydoc } = roomData[documentId];
+            const { ydoc, documentTitle } = roomData[documentId];
 
             // send initial state to new client
             socket.emit('initialState', Y.encodeStateAsUpdate(ydoc));

@@ -1,50 +1,112 @@
 import * as Y from 'yjs';
 import Document from '../DB/models/documentModel.js';
-import DocumentVersion from '../DB/models/documentVersionModel.js'
+import User from '../DB/models/userModel.js';
+import { v4 } from 'uuid';
 
-// checks if documentId is in DB and returns true or false
-export async function isDocumentInDB(documentId) {
+// function to create documentz
+export async function createDocument(req, res) {
     try {
-        const doc = await Document.findOne({ documentId });
-        if (doc) {
-            console.log(`Document ${documentId} exists`);
-            return true;
+        // let document ID be request body
+        let { documentId } = req.body;
+        // retrieve and verify user id from authentication middleware
+        const owner = req.user?.id;
+
+        // if user not logged in
+        if (!owner) {
+            return res.status(401).json({ error: "Unauthorized. No user logged in." });
         }
-        else {
-            console.log(`Document ${documentId} does not exist`);
-            return false
+
+        // generate documentId 
+        if (!documentId) {
+            documentId = v4();
         }
+
+        // check if document exists
+        const existingDocument = await Document.findOne({ documentId });
+        if (existingDocument) {
+            return res.status(400).json({ error: "Document with this ID already exists." });
+        }
+
+        // initialis ydoc, enpty state, and default document title
+        const ydoc = new Y.Doc();
+        const state = Buffer.from(Y.encodeStateAsUpdate(ydoc));
+        const documentTitle = "Untitled Document"
+        
+        // create new document in DB
+        const newDocument = await Document.create({ documentId, state, documentTitle, owner });
+
+        // add new document to ownedDocuments in user model
+        await User.findByIdAndUpdate(
+            owner,
+            { $push: { ownedDocuments: newDocument._id } },
+            { new: true }
+        );
+
+        // display success messages
+        console.log(`New document ${documentId} created and linked to owner ${owner}.`);
+        res.status(201).json({ message: "Document created successfully.", documentId });
+    
+    // display errors
     } catch (error) {
-        console.error(`Error checking for document ${documentId}:`, error.message);
-        return false;
+        console.error(`Error creating document:`, error.message);
+        res.status(500).json({ error: "Server error. Could not create document." });
     }
 }
 
+// function to retrieve owned documents for user
+export async function listDocuments (req, res) {
+    try {
+        // retrieve and verify user id from authentication middleware
+        const userId = req.user?.id; 
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        // find user in db
+        // uses populate to retrieve all document info
+        const user = await User.findById(userId).populate("ownedDocuments");
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        // respond with ownedDocuments for user
+        res.status(200).json(user.ownedDocuments);
+    
+        // display errors
+    } catch (error) {
+        console.error("Error fetching documents:", error.message);
+        res.status(500).json({ error: "Server error. Could not fetch documents." });
+    }
+};
+
 //load document if it exists or create document if it doesn't
-export async function loadOrCreateDocument(documentId) {
+export async function loadDocument(documentId) {
     try {
         //does doc exist
-        const exists = await isDocumentInDB(documentId);
+        //const exists = await isDocumentInDB(documentId);
+        const docData = await Document.findOne({ documentId }); //find document by id and assign to docData
+        
+        //document not found in DB
+        if (!docData) {
+            console.log(`Document ${documentId} not found in the database.`);
+            throw new Error("Document not found");
+        }
 
         //create ydoc
         const ydoc = new Y.Doc();
 
-        //if doc exists else doc does not exist
-        if (exists) {
-            const docData = await Document.findOne({ documentId }); //find document by id and assign to docData
-            Y.applyUpdate(ydoc, new Uint8Array(docData.state)); //assign state of doc to ydoc
-            console.log(`Document ${documentId} loaded from database.`);
-        } else {
-            console.log(`Document ${documentId} does not exist. Creating a new one.`);
-            const state = Buffer.from(Y.encodeStateAsUpdate(ydoc)); //assign state variable to an empty Buffer value
-            Document.create({ documentId, state }); //add new blank document to DB
-        }
+        //apply doc state to ydoc
+        Y.applyUpdate(ydoc, new Uint8Array(docData.state));
+        console.log(`Document ${documentId} loaded from database.`);
 
-        return ydoc; //return ydoc to server
+        //create doc name varaiable
+        const documentTitle = docData.documentTitle || "Untitled Document";
+        
+        return { ydoc, documentTitle }; //return ydoc to server
 
     } catch (error) {
         console.error(`Error handling document ${documentId}:`, error.message);
-        return new Y.Doc(); //return ydoc to prevent crashing
+        //return ydoc to prevent crashing and title to prevent crashing
+        return { ydoc: new Y.Doc(), documentTitle: "Untitled Document"} 
     }
 }
 
@@ -65,58 +127,3 @@ export async function saveDocument(documentId, ydoc) {
         console.error(`Error saving document ${documentId}:`, error.message);
     }
 }
-
-// const documentController = {
-//     loadOrCreateDocument: async (req, res) => {
-//         try {
-//             const { documentId } = req.params;
-//             const ydoc = new Y.Doc();
-
-//             let docData = await Document.findOne({ documentId }); //find document by id and assign to docData
-
-//             if (docData) {
-//                 Y.applyUpdate(ydoc, new Uint8Array(docData.state)); //assign state of doc to ydoc
-//                 console.log(`Document ${documentId} loaded from database.`);
-//             } else {
-//                 console.log(`Document ${documentId} does not exist. Creating a new one.`);
-//                 const state = Buffer.from(Y.encodeStateAsUpdate(ydoc)); //assign state variable to an empty Buffer value
-//                 docData = await Document.create({ documentId, state }); //add new blank document to DB
-//             }
-
-//             res.json({ documentId, state: Array.from(Y.encodeStateAsUpdate(ydoc))})
-
-//         } catch (error) {
-//             console.error(`Error handling document ${documentId}:`, error.message);
-//             res.status(500).json({ error: 'Server error. Loading/Creating Document' });
-//         }
-//     },
-
-//     saveDocument: async (req, res) => {
-        
-//         try {
-
-//             const { documentId } = req.params;
-//             const { state } = req.body;
-//             const stateBuffer = Buffer.from(state);
-
-//             const docData = await Document.findOne({ documentId });
-
-//             if (!docData) {
-//                 return res.status(404).json({ error: "Document not found."});
-//             }
-
-//             //update document
-//             await Document.updateOne(
-//                 { documentId }, //find doc id
-//                 { state: stateBuffer, lastUpdated: Date.now() } // update state field
-//             );
-
-//             console.log(`Document ${documentId} saved`);
-//             res.json({ message: 'Document saved successfully' });
-    
-//         } catch (error) {
-//             console.error(`Error saving document:`, error.message);
-//             res.status(500).json({ error: 'Server error. Document could not be saved' });
-//         }
-//     }        
-// }

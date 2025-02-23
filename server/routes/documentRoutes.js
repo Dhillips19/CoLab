@@ -1,13 +1,14 @@
-// import express from 'express';
-// import documentController from '../controllers/documentController.js';
+import express from 'express';
+import { createDocument, listDocuments } from '../controllers/documentController.js';
+import authenticateUser from '../middleware/authMiddleware.js';
 
-// const documentRouter = express.Router();
+const documentRouter = express.Router();
 
-// // Load or Create Document
-// documentRouter.get('/:documentId', documentController.loadOrCreateDocument);
+// create document
+documentRouter.post('/create', authenticateUser, createDocument);
 
-// // Save Document
-// documentRouter.post('/save/:documentId', documentController.saveDocument);
+// list documents
+documentRouter.get('/list', authenticateUser, listDocuments);
 
 // // Save document version
 // documentRouter.post('/saveVersion/:documentId', documentController.saveVersion);
@@ -18,4 +19,4 @@
 // // Restore document version
 // documentRouter.post('/restore/:documentId/:versionId', documentController.restoreVersion);
 
-// export default documentRouter;
+export default documentRouter;

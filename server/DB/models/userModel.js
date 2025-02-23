@@ -14,7 +14,16 @@ const userModel = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-    }
+    },
+    ownedDocuments: [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Document' 
+    }],
+    sharedDocuments: 
+    [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Document' 
+    }],
 }, {
     timestamps: true,
 });
@@ -22,4 +31,3 @@ const userModel = new mongoose.Schema({
 const User = mongoose.model('User', userModel);
 
 export default User;
-
