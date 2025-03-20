@@ -21,12 +21,17 @@ const DocumentSchema = new mongoose.Schema({
     },
     collaborators: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-    }]
-    // lastUpdated: {
-    //     type: Date,
-    //     default: Date.now
-    // },
-});
+    }],
+    createdAt: {
+        type: Date,
+        default: Date.now,
+        immutable: true
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
+    }
+}, { timestamps: true }); // This automatically manages updatedAt and createdAt
 
 const Document = mongoose.model('Document', DocumentSchema);
 

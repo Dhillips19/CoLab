@@ -1,48 +1,39 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
-import './LoginRegister.css';
+import { faEnvelope, faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import '../../css/LoginRegister.css';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
-// login 
 const Login = () => {
-    
     const [formData, setFormData] = useState({ 
         email: '', 
-        password: '' });
-
+        password: '' 
+    });
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState("");
-    const navigate = useNavigate(); // Navigation hook
+    const [success, setSuccess] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { login } = useAuth();
 
-    // Handle input changes
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(''); // Clear previous errors
+        setError('');
+        setIsLoading(true);
 
         try {
             const res = await axios.post('http://localhost:3001/api/auth/login', formData);
-
-            // Save JWT token to localStorage
-            localStorage.setItem('token', res.data.token);
-
-            setSuccess("User logged in successfully!");
-
-            // Redirect to a protected route
-            try {
-                navigate('/');    
-            } catch (error) {
-                setError(error.response?.data?.message || 'Redirect failed');
-            }
-            
+            login(res.data.token);
+            setSuccess("Login successful! Redirecting...");
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+            console.error("Login error:", err);
+            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -50,12 +41,12 @@ const Login = () => {
         <div className='wrapper'>
             <div className='container'>
                 <div className='header'>
-                    <div className='text'>Login</div>
+                    <div className='text'>Welcome Back</div>
                     <div className="underline"></div>
                 </div>
 
-                {error && <p className="error">{error}</p>}
-                {success && <p className="success">{success}</p>}
+                {error && <div className="error">{error}</div>}
+                {success && <div className="success">{success}</div>}
 
                 <form className="inputs" onSubmit={handleSubmit}>
                     <div className="input">
@@ -63,10 +54,11 @@ const Login = () => {
                         <input 
                             type="email" 
                             name="email" 
-                            placeholder='Email' 
+                            placeholder='Email Address' 
                             value={formData.email} 
                             onChange={handleChange}              
                             required 
+                            disabled={isLoading}
                         />
                     </div>
 
@@ -79,16 +71,30 @@ const Login = () => {
                             value={formData.password} 
                             onChange={handleChange} 
                             required 
+                            disabled={isLoading}
                         />
                     </div>
 
                     <div className="submit-container">
-                        <button type="submit" className="submit">Login</button>
+                        <button 
+                            type="submit" 
+                            className="submit"
+                            disabled={isLoading}
+                        >
+                            Sign In
+                            {isLoading && <FontAwesomeIcon icon={faSpinner} className="spinner-icon" />}
+                        </button>
                     </div>
                 </form>
 
                 <div className="forgot-password">
-                    Forgot Password? <span>Click Here</span>
+                    Forgot your password?
+                    <span>Reset it here</span>
+                </div>
+
+                <div className="account-link">
+                    Don't have an account?
+                    <Link to="/register">Create account</Link>
                 </div>
             </div>
         </div>

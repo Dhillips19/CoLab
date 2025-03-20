@@ -110,6 +110,16 @@ export async function loadDocument(documentId) {
     }
 }
 
+// function to update document title
+export async function updateDocumentTitle(documentId, newTitle) {
+    try {
+        await Document.updateOne({ documentId }, { documentTitle: newTitle });
+        console.log(`Document title updated in DB: ${newTitle}`);
+    } catch (error) {
+        console.error(`Error updating document title:`, error.message);
+    }
+}
+
 // function to save ydoc to document schema
 export async function saveDocument(documentId, ydoc) {
     try {

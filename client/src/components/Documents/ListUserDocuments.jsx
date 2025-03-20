@@ -1,45 +1,41 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
-import "./ListUserDocuments.css";
+import "../../css/ListUserDocuments.css";
 
-// react component to list user documents
 const ListUserDocuments = () => {
-
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
+    
     const navigate = useNavigate();
 
-    // fetch user documents
-    useEffect(() => {
-        const fetchDocuments = async () => {
-            try {
-                const response = await fetch("http://localhost:3001/api/documents/list", { // use list api
-                    method: "GET",
-                    headers: {
-                        "Authorization": `Bearer ${localStorage.getItem("token")}`,
-                    },
-                });
+    const fetchDocuments = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch("http://localhost:3001/api/documents/list", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json"
+                },
+            });
 
-                // store api response
-                const data = await response.json();
-
-                // ensure response was okay
-                if (response.ok) {
-                    setDocuments(data); // set documents
-                } else {
-                    setError(`Error: ${data.error}`); // display error if failure
-                }
-            // display error if encountered
-            } catch (error) {
-                console.error("Error fetching documents:", error);
-                setError("Failed to fetch documents.");
-            } finally {
-                setLoading(false);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        };
+            
+            const data = await response.json();
+            setDocuments(data);
+            setError("");
+        } catch (error) {
+            setError(`Failed to fetch documents: ${error.message}`);
+            console.error("Error:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         fetchDocuments();
     }, []);
 
@@ -57,12 +53,16 @@ const ListUserDocuments = () => {
             ) : (
                 <div className='documents-list'>
                     {documents.map((doc) => (
-                        <div key={doc._id} className='document-item' onClick={() => navigate(`/document/${doc.documentId}`)}>
+                        <a
+                            key={doc._id}
+                            href={`/document/${doc.documentId}`}
+                            className='document-item'
+                        >
                             <h3 className='document-title'>{doc.documentTitle}</h3>
                             <p className='document-date'>
                                 Last Updated: {new Date(doc.updatedAt).toLocaleString()}
                             </p>
-                        </div>
+                        </a>
                     ))}
                 </div>
             )}

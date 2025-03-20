@@ -1,0 +1,55 @@
+.document-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: relative;
+}
+
+.document-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.document-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e1e4e8;
+}
+
+.add-collaborator-btn {
+    background-color: #6a0dad;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.add-collaborator-btn:hover {
+    background-color: #5a0bad;
+}
+
+.collaborator-search-container {
+    padding: 16px;
+    border-bottom: 1px solid #e1e4e8;
+    background-color: #f8f9fa;
+}
+
+.editor-wrapper {
+    flex: 1;
+    overflow: auto;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 1.2rem;
+    color: #555;
+}

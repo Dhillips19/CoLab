@@ -15,6 +15,10 @@ const userModel = new mongoose.Schema({
         type: String,
         required: true,
     },
+    colour: {
+        type: String,
+        default: '#3498db',
+    },
     ownedDocuments: [{ 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Document' 

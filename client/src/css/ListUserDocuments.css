@@ -1,0 +1,158 @@
+/* Container for the document section */
+.documents-container {
+    max-width: 1400px;  /* Increased from 800px to fit more documents */
+    margin: 0 auto;
+    padding: 2rem;
+    background-color: #f8f9fa;
+}
+
+/* Title */
+.documents-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+h2 {
+    color: #2c3e50;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 0.5rem;
+}
+
+/* Loading and Error Messages */
+.documents-loading, .documents-error {
+    font-size: 16px;
+    color: red;
+    margin-bottom: 12px;
+}
+
+/* Empty state */
+.documents-empty {
+    font-size: 16px;
+    color: gray;
+}
+
+/* Documents List Layout - Changed from grid to flex */
+.documents-list {
+    display: grid;
+    grid-template-columns: repeat(5, 200px); /* Fixed 5 columns of 200px each */
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+/* Individual Document Item */
+.document-item {
+    background-color: white;
+    aspect-ratio: 8.5/11;
+    width: 100%;
+    max-width: 200px;  /* Reduced from 250px to fit more documents */
+    margin: 0 auto;
+    padding: 1.5rem;
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.12),
+        2px 2px 2px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e1e8ed;
+    background: linear-gradient(to right bottom, 
+        white 95%, 
+        #f0f0f0 98%, 
+        #e8e8e8 100%
+    );
+    text-decoration: none; /* Remove underline from link */
+    color: inherit; /* Maintain text color */
+    display: block; /* Make the anchor tag behave like a div */
+}
+
+/* Document background icon */
+.document-item::before {
+    content: '📄';
+    position: absolute;
+    font-size: 8rem;
+    opacity: 0.03;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.document-item:hover {
+    transform: translateY(-4px) rotate(1deg);
+    box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.15),
+        4px 4px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Document Title */
+.document-title {
+    position: relative;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e1e8ed;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+/* Document Date */
+.document-date {
+    position: relative;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1;
+}
+
+/* Ensure document date styling takes precedence */
+.document-item .document-date {
+    position: relative;
+    color: #7f8c8d !important; /* Temporarily adding !important to override */
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    z-index: 1;
+}
+
+/* Left border accent */
+.document-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background-color: #3498db;
+    border-radius: 4px 0 0 4px;
+}
+
+/* Loading and Error States */
+.documents-container p:empty {
+    display: none;
+}
+
+.documents-container p:has(+ .documents-list) {
+    margin-bottom: 1rem;
+}
+
+/* Error Message */
+.documents-container > p:not(:empty):not(.document-date):not(:has(+ .documents-list)) {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 8px;
+}

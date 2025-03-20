@@ -1,0 +1,359 @@
+:root {
+    --nav-bar-height: 3.5rem;
+    --primary-color: #3498db;
+    --text-dark: #2c3e50;
+    --text-light: #ecf0f1;
+    --bg-color: #f9fbfd;
+    --shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    margin: 0;
+    font-family: 'Segoe UI', Roboto, -apple-system, BlinkMacSystemFont, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Navigation Menu */
+.navigation-menu {
+    display: flex;
+    align-items: center;
+    height: var(--nav-bar-height, 3.5rem);
+    padding: 0 1.5rem;
+    background-color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* Brand/Logo with improved spacing */
+.nav-brand {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem; /* Add more space after the brand */
+}
+
+.brand-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    letter-spacing: -0.5px;
+}
+
+/* Add this to your NavBar.css */
+.brand-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+.brand-link:hover {
+    transform: scale(1.05);
+}
+
+.brand-link:active {
+    transform: scale(0.98);
+}
+
+/* Adjust navigation links layout */
+nav {
+    display: flex;
+    align-items: center;
+}
+
+/* Change these properties to adjust the space between login and register links */
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1rem; /* This controls the space between list items */
+}
+
+/* Ensure proper vertical alignment */
+.navigation-menu li {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    margin-right: 0; /* Remove any default margins */
+}
+
+/* For the login/register case specifically */
+.navigation-menu li + li {
+    margin-left: 0; /* Override any browser default spacing */
+}
+
+/* You might also want to adjust the padding inside the links */
+.navigation-menu a {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem; /* Adjust this to change the size of the clickable area */
+    border-radius: 4px;
+    text-decoration: none;
+    color: var(--text-dark, #333);
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.navigation-menu a:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--primary-color, #3498db);
+}
+
+/* User Controls Section */
+.user-controls {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.settings-link {
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.settings-link:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--primary-color);
+}
+
+/* User Icon */
+.user-settings {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: transform 0.2s ease;
+}
+
+.settings-cog {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #666;
+    transition: transform 1s ease, color 0.2s ease;
+}
+
+.settings-cog:hover {
+    transform: rotate(360deg);
+    color: var(--primary-color);
+}
+
+/* Settings Dropdown */
+.settings-dropdown {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    width: 280px;
+    overflow: hidden;
+    z-index: 101;
+    animation: dropdown-fade 0.2s ease;
+}
+
+@keyframes dropdown-fade {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dropdown Header */
+.settings-header {
+    padding: 1rem;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.settings-header h3 {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Colour Picker */
+.colour-picker {
+    padding: 1rem;
+}
+
+.colour-picker p {
+    margin: 0 0 0.75rem 0;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Update the colour grid to accommodate 15 colours */
+.colour-options {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 columns instead of 4 */
+    gap: 0.5rem; /* Slightly smaller gap to fit more colours */
+    padding: 0.5rem;
+}
+
+.colour-option {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+}
+
+.colour-option:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+}
+
+.colour-option.selected {
+    box-shadow: 0 0 0 2px white, 0 0 0 4px #3498db;
+}
+
+.colour-selected {
+    width: 0.8rem;
+    height: 0.8rem;
+    background-color: white;
+    border-radius: 50%;
+}
+
+/* Dropdown Footer */
+.settings-footer {
+    padding: 1rem;
+    border-top: 1px solid #edf2f7;
+    display: flex;
+    justify-content: center;
+}
+
+.logout-button {
+    background-color: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    color: #718096;
+    padding: 0.6rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    width: 100%;
+    justify-content: center;
+}
+
+.logout-button:hover {
+    background-color: #e53e3e;
+    color: white;
+    border-color: #e53e3e;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .navigation-menu {
+        padding: 0 1rem;
+    }
+    
+    .nav-links {
+        gap: 0.5rem;
+    }
+    
+    .navigation-menu a {
+        padding: 0.4rem;
+    }
+    
+    .nav-links li span {
+        display: none;
+    }
+    
+    .settings-link span {
+        display: none;
+    }
+    
+    .user-controls {
+        gap: 0.75rem;
+    }
+
+    .user-name {
+        display: none; /* Hide name on small screens */
+    }
+}
+
+/* Improved left section */
+.left-section {
+    display: flex;
+    align-items: center;
+    flex: 0 1 auto; /* Don't grow, shrink if needed */
+}
+
+/* Settings menu item */
+.settings-menu {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #edf2f7;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 0.5rem;
+    color: var(--text-dark);
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.settings-item:hover {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--primary-color);
+}
+
+/* Add this to ensure right positioning */
+.right-section {
+    display: flex;
+    align-items: center;
+    margin-left: auto; /* This pushes it to the right */
+}
+
+/* Add this to NavBar.css */
+
+/* User info with name next to icon */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-name {
+    font-weight: 500;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+}

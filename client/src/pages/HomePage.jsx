@@ -8,8 +8,8 @@ export default function HomePage() {
     return (
         <div>
             <NavBar/>
-            <ListUserDocuments/>
             <CreateDocument/>
+            <ListUserDocuments/>
         </div>
     )
 }
