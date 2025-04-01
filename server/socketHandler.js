@@ -232,6 +232,7 @@ import { loadChatMessages, saveChatMessage } from "./controllers/chatController.
 
 // Store room-specific Y.js documents and timers
 const roomData = {};
+const roomUsers = {}
 
 export default function initializeSocket(server) {
     const io = new Server(server, {
@@ -243,7 +244,18 @@ export default function initializeSocket(server) {
     io.on('connection', (socket) => {
         console.log(`User connected: ${socket.id}`);
 
-        socket.on('joinDocumentRoom', async (documentId) => {
+        socket.on('joinDocumentRoom', async ({ documentId, username, colour }) => {
+            
+            console.log(`User ${username}, ${colour}`);
+            
+            if (socket.joinedRooms?.has(documentId)) {
+                console.log(`Socket ${socket.id} already joined ${documentId}, skipping.`);
+                return;
+            }
+
+            socket.joinedRooms = socket.joinedRooms || new Set();
+            socket.joinedRooms.add(documentId);
+
             try {
                 console.log(`User ${socket.id} joined document room: ${documentId}`);
                 socket.join(documentId);
@@ -261,18 +273,41 @@ export default function initializeSocket(server) {
                     // Save document state every 10 seconds
                     roomData[documentId].timer = setInterval(async () => {
                         console.log(`Auto-saving document ${documentId} to database.`);
-                        console.log(`Document ${documentId} has ${roomData[documentId].ydoc.getText('quill').length} characters.`);
                         await saveDocument(documentId, roomData[documentId].ydoc);
                     }, 10000);
                 }
 
                 const { ydoc, documentTitle } = roomData[documentId];
 
+                // create roomUsers object if it doesn't exist
+                if (!roomUsers[documentId]) {
+                    roomUsers[documentId] = {};
+                }
+                // check if user already exists in the room
+                const userAlreadyExists = Object.values(roomUsers[documentId]).some(
+                    (user) => user.username === username
+                );
+                // add user if they do not exist
+                if (!userAlreadyExists) {
+                    roomUsers[documentId][socket.id] = { username, colour };
+                }
+                console.log(`Users in room ${documentId}:`, roomUsers[documentId]);
+
+                // Broadcast to others that a new user joined
+                io.to(documentId).emit("updateUsers", Object.values(roomUsers[documentId]));
+
                 // Send the initial document state
                 socket.emit("initialState", Y.encodeStateAsUpdate(ydoc));
                 socket.emit("updateTitle", documentTitle);
 
-                // Attach event listeners **only if they haven't been added before**
+                try {
+                    const chatHistory = await loadChatMessages(documentId);
+                    socket.emit("loadMessages", chatHistory);
+                } catch (error) {
+                    console.error(`Error loading chat for ${documentId}:`, error);
+                }
+
+                // Attach event listeners 
                 if (!socket.hasUpdateListener) {
                     socket.on("update", (update) => {
                         Y.applyUpdate(ydoc, new Uint8Array(update));
@@ -291,6 +326,36 @@ export default function initializeSocket(server) {
             }
         });
 
+        socket.on("updateTitle", async ({ documentId, title }) => {
+            if (!documentId || !title) return console.warn("Invalid title update request.");
+
+            if (roomData[documentId]) {
+                console.log(`Title updated: ${title}`);
+                roomData[documentId].documentTitle = title;
+                io.to(documentId).emit("updateTitle", title);
+
+                try {
+                    await updateDocumentTitle(documentId, title);
+                } catch (error) {
+                    console.error("Failed to update document title:", error);
+                }
+            }
+        });
+
+        // Handle chat messages
+        socket.on("sendMessage", async ({ documentId, username, message }) => {
+            if (!documentId || !message || !username) return;
+
+            const chatMessage = { username, message, timestamp: new Date() };
+
+            try {
+                await saveChatMessage(documentId, chatMessage);
+                io.to(documentId).emit("receiveMessage", chatMessage);
+            } catch (error) {
+                console.error(`Failed to save chat message:`, error);
+            }
+        });
+
         // Handle cleanup when users disconnect
         socket.on('disconnecting', async () => {
             const documentRooms = Array.from(socket.rooms).filter((room) => room !== socket.id);
@@ -306,13 +371,17 @@ export default function initializeSocket(server) {
                         if (roomData[room].timer) {
                             console.log(`Clearing auto-save timer for document ${room}`);
                             
-                            console.log(`${roomData[room].timer}`)
                             clearInterval(roomData[room].timer);
-                            console.log(`${roomData[room].timer}`)
+                            roomData[room].timer = null; // prevent double-clears
                         }
         
                         await saveDocument(room, roomData[room].ydoc);
                         delete roomData[room];
+                    }
+
+                    if (roomUsers[room]) {
+                        delete roomUsers[room][socket.id];
+                        io.to(room).emit("updateUsers", Object.values(roomUsers[room]));
                     }
                 } else {
                     console.log(`${roomClients.length - 1} users still in room ${room}, not cleaning up.`);

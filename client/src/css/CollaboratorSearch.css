@@ -1,62 +1,106 @@
+/* Add these styles to your CollaboratorSearch.css file */
 .collaborator-search {
-    padding: 1rem;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
 }
 
+/* Search form */
 .search-form {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 8px;
+    margin-bottom: 16px;
 }
 
 .search-input {
     flex: 1;
-    padding: 0.5rem;
-    border: 1px solid #e1e8ed;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
     border-radius: 4px;
+    font-size: 14px;
 }
 
 .search-button {
-    padding: 0.5rem 1rem;
-    background: #3498db;
+    background-color: #6a0dad;
     color: white;
     border: none;
     border-radius: 4px;
+    padding: 8px 16px;
     cursor: pointer;
+    font-weight: 500;
 }
 
+.search-button:hover {
+    background-color: #8a2be2;
+}
+
+/* Search results */
 .search-results {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+    margin-top: 16px;
 }
 
 .user-result {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem;
-    border: 1px solid #e1e8ed;
-    border-radius: 4px;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
 }
 
+.user-result:last-child {
+    border-bottom: none;
+}
+
+.collaborator-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.collaborator-info {
+    display: flex;
+    align-items: center;
+}
+
+.collaborator-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: white;
+    font-weight: bold;
+}
+
+/* Add button */
 .add-button {
-    padding: 0.25rem 0.75rem;
-    background: #2ecc71;
+    background-color: #6a0dad;
     color: white;
     border: none;
     border-radius: 4px;
+    padding: 6px 10px;
     cursor: pointer;
 }
 
+.add-button:hover {
+    background-color: #8a2be2;
+}
+
+.added {
+    background-color: #4CAF50;
+}
+
+/* Messages */
 .error-message {
-    color: #e74c3c;
-    margin: 0.5rem 0;
+    color: #e53e3e;
+    margin: 8px 0;
 }
 
 .success-message {
-    color: #2ecc71;
-    margin: 0.5rem 0;
+    color: #38a169;
+    margin: 8px 0;
 }

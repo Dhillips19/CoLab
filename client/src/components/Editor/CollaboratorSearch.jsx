@@ -72,8 +72,6 @@ const CollaboratorSearch = ({ documentId }) => {
 
     return (
         <div className="collaborator-search">
-            <h3>Add Collaborators</h3>
-            
             <form onSubmit={handleSearch} className="search-form">
                 <input
                     type="text"

@@ -21,7 +21,7 @@ body {
 .navigation-menu {
     display: flex;
     align-items: center;
-    height: var(--nav-bar-height, 3.5rem);
+    height: 3rem;
     padding: 0 1.5rem;
     background-color: white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);

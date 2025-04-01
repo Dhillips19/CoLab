@@ -39,7 +39,9 @@ const Editor = ({ documentId , username }) => {
         });
         // cleanup 
         return() => {
-            socket.disconnect()
+            socket.off('initialState');
+            socket.off('update');
+            ydoc.destroy();
         }
     }, [documentId]);
 

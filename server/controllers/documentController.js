@@ -27,7 +27,7 @@ export async function createDocument(req, res) {
             return res.status(400).json({ error: "Document with this ID already exists." });
         }
 
-        // initialis ydoc, enpty state, and default document title
+        // initialise ydoc, enpty state, and default document title
         const ydoc = new Y.Doc();
         const state = Buffer.from(Y.encodeStateAsUpdate(ydoc));
         const documentTitle = "Untitled Document"
@@ -64,12 +64,19 @@ export async function listDocuments (req, res) {
 
         // find user in db
         // uses populate to retrieve all document info
-        const user = await User.findById(userId).populate("ownedDocuments");
+        const user = await User.findById(userId)
+            .populate("ownedDocuments")
+            .populate("sharedDocuments");
+
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        // respond with ownedDocuments for user
-        res.status(200).json(user.ownedDocuments);
+
+        // respond with ownedDocuments and sharedDocuments for user
+        res.status(200).json({
+            ownedDocuments: user.ownedDocuments || [],
+            sharedDocuments: user.sharedDocuments || []
+        });
     
         // display errors
     } catch (error) {

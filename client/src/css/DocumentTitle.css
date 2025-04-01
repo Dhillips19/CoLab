@@ -1,17 +1,33 @@
-.document-title-container {
-    flex: 1;
-}
-
 .title-display {
     margin: 0;
     font-size: 1.5rem;
     font-weight: 500;
     color: #333;
     cursor: text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Show ... for long titles */
+    padding-right: 20px; /* Space for hover effect */
+    position: relative;
+}
+
+.title-display:after {
+    content: "✏️"; /* Pencil emoji to indicate edit */
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 .title-display:hover {
     color: #6a0dad;
+}
+
+.title-display:hover:after {
+    opacity: 1;
 }
 
 .title-input {
@@ -22,6 +38,7 @@
     border-radius: 4px;
     width: 100%;
     max-width: 500px;
+    min-width: 150px;
     outline: none;
     color: #333;
 }

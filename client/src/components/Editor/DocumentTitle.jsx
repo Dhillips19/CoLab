@@ -36,7 +36,7 @@ const DocumentTitle = ({ documentId }) => {
     };
 
     return (
-        <div className="document-title-container">
+        <div>
             {isEditing ? (
                 <input type="text" value={title} onChange={handleChange} onBlur={handleBlur} 
                        onKeyDown={handleKeyDown} className="title-input" autoFocus/>

@@ -17,6 +17,12 @@ export async function searchUser(req, res) {
             return res.status(404).json({ message: 'Document not found' });
         }
 
+        // Get array of collaborator user IDs
+        const collaboratorIds = doc.collaborators.map(collab => collab.user);
+        
+        // Add owner ID to the exclusion list
+        const excludedIds = [doc.owner, ...collaboratorIds];
+
         // Search for users excluding the owner
         const users = await User.find({
             $and: [
@@ -26,7 +32,7 @@ export async function searchUser(req, res) {
                         { email: { $regex: searchTerm, $options: 'i' } }
                     ]
                 },
-                { _id: { $ne: doc.owner } } // Exclude the owner
+                { _id: { $nin: excludedIds } } // Exclude the owner
             ]
         }).select('username email _id');
 
@@ -39,29 +45,17 @@ export async function searchUser(req, res) {
 
 export async function addCollaborator(req, res) {
     try {
+        // find document by documentId
         const doc = await Document.findOne({ documentId: req.params.documentId });
-        
-        // Check if user is owner
-        if (doc.owner.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'Only the owner can add collaborators' });
-        }
-
-        // Prevent owner from adding themselves
-        if (req.body.userId === req.user.id) {
-            return res.status(400).json({ message: 'You are already the owner of this document' });
-        }
-
-        // Check if user is already a collaborator
-        const isCollaborator = doc.collaborators.some(collab => 
-            collab.user.toString() === req.body.userId
-        );
-
-        if (isCollaborator) {
-            return res.status(400).json({ message: 'User is already a collaborator' });
-        }
 
         doc.collaborators.push({ user: req.body.userId });
         await doc.save();
+
+        await User.findByIdAndUpdate(
+            req.body.userId,
+            { $push: { sharedDocuments: doc._id } },
+            { new: true }
+        );
 
         res.json({ message: 'Collaborator added successfully' });
     } catch (error) {
