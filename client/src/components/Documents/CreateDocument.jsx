@@ -1,10 +1,17 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom';
+import '../../css/CreateDocument.css';
 
 // react create document button component
 const CreateDocument = () => {
 
     const navigate = useNavigate();
+    const location = useLocation(); 
+    const [isHomePage, setIsHomePage] = useState("");
+    
+    useEffect(() => {
+        setIsHomePage(location.pathname === "/");
+    }, [location.pathname]);
 
     // function to handle create document
     const handleCreateDocument = async () => {
@@ -35,8 +42,13 @@ const CreateDocument = () => {
     };
     // display create document button
     return (
-        <div>
-            <button onClick={handleCreateDocument}>Create Document</button> 
+        <div className="create-document-container">
+            <button 
+                className={isHomePage ? 'create-document-button-homepage' : 'create-document-button'} 
+                onClick={handleCreateDocument}
+            >
+                {isHomePage ? 'Create New Document' : 'Create New Document'}
+            </button> 
         </div>
     );
 }

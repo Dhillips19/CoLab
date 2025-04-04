@@ -144,3 +144,40 @@ export async function saveDocument(documentId, ydoc) {
         console.error(`Error saving document ${documentId}:`, error.message);
     }
 }
+
+// function to verify if document exists and user is the owner
+export async function getDocumentById(req, res) {
+    try {
+        const { documentId } = req.params;
+        const userId = req.user?.id;
+        
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        
+        const document = await Document.findOne({ documentId });
+        
+        if (!document) {
+            return res.status(404).json({ error: "Document not found" });
+        }
+        
+        // check if user has access to the document
+        const isOwner = document.owner.toString() === userId;
+        const isCollaborator = document.collaborators.some(
+            collab => collab.user.toString() === userId
+        );
+        
+        if (!isOwner && !isCollaborator) {
+            return res.status(403).json({ error: "You don't have access to this document" });
+        }
+        
+        res.status(200).json({
+            documentId: document.documentId,
+            isOwner,
+        });
+        
+    } catch (error) {
+        console.error("Error fetching document:", error.message);
+        res.status(500).json({ error: "Server error" });
+    }
+}

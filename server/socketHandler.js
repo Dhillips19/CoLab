@@ -246,85 +246,97 @@ export default function initializeSocket(server) {
 
         socket.on('joinDocumentRoom', async ({ documentId, username, colour }) => {
             
-            console.log(`User ${username}, ${colour}`);
-            
-            if (socket.joinedRooms?.has(documentId)) {
-                console.log(`Socket ${socket.id} already joined ${documentId}, skipping.`);
-                return;
-            }
-
-            socket.joinedRooms = socket.joinedRooms || new Set();
-            socket.joinedRooms.add(documentId);
-
             try {
-                console.log(`User ${socket.id} joined document room: ${documentId}`);
-                socket.join(documentId);
-
-                // Load or create the document
-                if (!roomData[documentId]) {
-                    const docData = await loadDocument(documentId);
-                    if (!docData || !docData.ydoc) {
-                        console.error(`Error: Document ${documentId} could not be loaded.`);
-                        socket.emit("error", "Document not found");
-                        return;
-                    }
-                    roomData[documentId] = { ydoc: docData.ydoc, documentTitle: docData.documentTitle, timer: null };
-
-                    // Save document state every 10 seconds
-                    roomData[documentId].timer = setInterval(async () => {
-                        console.log(`Auto-saving document ${documentId} to database.`);
-                        await saveDocument(documentId, roomData[documentId].ydoc);
-                    }, 10000);
+                console.log(`User ${username}, ${colour}, attempting to join document: ${documentId}`);
+                
+                if (socket.joinedRooms?.has(documentId)) {
+                    console.log(`Socket ${socket.id} already joined ${documentId}, skipping.`);
+                    return;
                 }
 
-                const { ydoc, documentTitle } = roomData[documentId];
-
-                // create roomUsers object if it doesn't exist
-                if (!roomUsers[documentId]) {
-                    roomUsers[documentId] = {};
-                }
-                // check if user already exists in the room
-                const userAlreadyExists = Object.values(roomUsers[documentId]).some(
-                    (user) => user.username === username
-                );
-                // add user if they do not exist
-                if (!userAlreadyExists) {
-                    roomUsers[documentId][socket.id] = { username, colour };
-                }
-                console.log(`Users in room ${documentId}:`, roomUsers[documentId]);
-
-                // Broadcast to others that a new user joined
-                io.to(documentId).emit("updateUsers", Object.values(roomUsers[documentId]));
-
-                // Send the initial document state
-                socket.emit("initialState", Y.encodeStateAsUpdate(ydoc));
-                socket.emit("updateTitle", documentTitle);
+                socket.joinedRooms = socket.joinedRooms || new Set();
+                socket.joinedRooms.add(documentId);
 
                 try {
-                    const chatHistory = await loadChatMessages(documentId);
-                    socket.emit("loadMessages", chatHistory);
-                } catch (error) {
-                    console.error(`Error loading chat for ${documentId}:`, error);
-                }
+                    console.log(`User ${socket.id} joined document room: ${documentId}`);
+                    socket.join(documentId);
 
-                // Attach event listeners 
-                if (!socket.hasUpdateListener) {
-                    socket.on("update", (update) => {
-                        Y.applyUpdate(ydoc, new Uint8Array(update));
-                        socket.to(documentId).emit("update", update);
+                    // Load or create the document
+                    if (!roomData[documentId]) {
+                        const docData = await loadDocument(documentId);
+                        if (!docData || !docData.ydoc) {
+                            console.error(`Error: Document ${documentId} could not be loaded.`);
+                            socket.emit("error", "Document not found");
+                            return;
+                        }
+                        roomData[documentId] = { ydoc: docData.ydoc, documentTitle: docData.documentTitle, timer: null };
+
+                        // Save document state every 10 seconds
+                        roomData[documentId].timer = setInterval(async () => {
+                            console.log(`Auto-saving document ${documentId} to database.`);
+                            await saveDocument(documentId, roomData[documentId].ydoc);
+                        }, 10000);
+                    }
+
+                    const { ydoc, documentTitle } = roomData[documentId];
+
+                    // create roomUsers object if it doesn't exist
+                    if (!roomUsers[documentId]) {
+                        roomUsers[documentId] = {};
+                    }
+                    // check if user already exists in the room
+                    const userAlreadyExists = Object.values(roomUsers[documentId]).some(
+                        (user) => user.username === username
+                    );
+                    // add user if they do not exist
+                    if (!userAlreadyExists) {
+                        roomUsers[documentId][socket.id] = { username, colour };
+                    }
+                    console.log(`Users in room ${documentId}:`, roomUsers[documentId]);
+
+                    // Broadcast to others that a new user joined
+                    io.to(documentId).emit("updateUsers", Object.values(roomUsers[documentId]));
+
+                    // Send the initial document state
+                    socket.emit("initialState", Y.encodeStateAsUpdate(ydoc));
+                    socket.emit("updateTitle", documentTitle);
+
+                    try {
+                        const chatHistory = await loadChatMessages(documentId);
+                        socket.emit("loadMessages", chatHistory);
+                    } catch (error) {
+                        console.error(`Error loading chat for ${documentId}:`, error);
+                    }
+
+                    // Attach event listeners 
+                    if (!socket.hasUpdateListener) {
+                        socket.on("update", (update) => {
+                            Y.applyUpdate(ydoc, new Uint8Array(update));
+                            socket.to(documentId).emit("update", update);
+                        });
+                        socket.hasUpdateListener = true; // Prevent duplicate listeners
+                    }
+
+                    socket.on("disconnect", () => {
+                        console.log(`User ${socket.id} disconnected from document: ${documentId}`);
                     });
-                    socket.hasUpdateListener = true; // Prevent duplicate listeners
+
+                } catch (error) {
+                    console.error(`Error handling document ${documentId}:`, error);
+                    socket.emit("documentError", {
+                        error: "Document not found",
+                        code: "DOCUMENT_NOT_FOUND",
+                    });
                 }
-
-                socket.on("disconnect", () => {
-                    console.log(`User ${socket.id} disconnected from document: ${documentId}`);
-                });
-
             } catch (error) {
-                console.error(`Error handling document ${documentId}:`, error);
-                socket.emit("error", "An error occurred while joining the document");
-            }
+                console.error(`Error joining document room ${documentId}:`, error);
+            }    
         });
+
+        socket.on('awareness-update', ({ documentId, update }) => {
+            socket.to(documentId).emit('awareness-update', { update });
+          });
+          
 
         socket.on("updateTitle", async ({ documentId, title }) => {
             if (!documentId || !title) return console.warn("Invalid title update request.");

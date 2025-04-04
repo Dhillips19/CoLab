@@ -94,12 +94,9 @@
 //     );
 // }
 
-// Add a ref for handling clicks outside the dropdown
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import Editor from "../components/Editor/Editor";
 import NavBar from "../components/NavBar/NavBar";
 import Chat from "../components/Editor/Chat";
@@ -111,35 +108,65 @@ import socket from "../socket/socket";
 
 export default function DocumentPage() {
     const {documentId} = useParams();
+    const navigate = useNavigate();
     const [username, setUsername] = useState("");
     const [colour, setColour] = useState("");
     const [activeUsers, setActiveUsers] = useState();
     const [showCollaboratorSearch, setShowCollaboratorSearch] = useState(false);
-    const collaboratorRef = useRef(null); // Add this ref
+    const [documentLoading, setDocumentLoading] = useState(true);
+    const [error, setError] = useState("");
+    const collaboratorRef = useRef(null);
 
-    // Close collaborator search when clicking outside
     useEffect(() => {
-        function handleClickOutside(event) {
-            if (collaboratorRef.current && 
-                !collaboratorRef.current.contains(event.target) && 
-                !event.target.closest('.add-collaborator-btn')) {
-                setShowCollaboratorSearch(false);
+        const verifyDocument = async () => {
+            try {
+
+                setDocumentLoading(true);
+                setError("");
+
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    navigate("/login");
+                    return;
+                }
+                
+                const response = await fetch(`http://localhost:3001/api/documents/verify/${documentId}`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+                
+                if (response.status === 404) {
+                    navigate("/document-not-found", { state: { documentId } });
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+                
+                // Document exists, proceed with socket setup
+                setupSocketConnection();
+                
+            } catch (error) {
+                console.error("Error verifying document:", error);
+                setError("Failed to load document");   
+            } finally {
+                setDocumentLoading(false);
             }
-        }
-        
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, []);
+        
+        verifyDocument();
+    }, [documentId, navigate]);
 
-    useEffect(() => {
+    const setupSocketConnection = () => {
         // Get username from token
         const token = localStorage.getItem("token");
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                console.log("Decoded token:", decoded);
                 setUsername(decoded.username || "Anonymous");
                 setColour(decoded.colour || "3498db");
 
@@ -147,6 +174,12 @@ export default function DocumentPage() {
                 if (!socket.connected) {
                     socket.connect();
                 }
+                
+                socket.on("documentError", (error) => {
+                    if(error.code === "DOCUMENT_NOT_FOUND") {
+                        navigate("/document-not-found", { state: { documentId } });
+                    }
+                });
 
                 socket.emit("joinDocumentRoom", { 
                     documentId, 
@@ -168,10 +201,86 @@ export default function DocumentPage() {
             socket.disconnect();
             socket.off("leaveDocumentRoom"); // clean up listener
         };
-    }, [documentId]);
+    };
+
+    // useEffect(() => {
+    //     // Get username from token
+    //     const token = localStorage.getItem("token");
+    //     if (token) {
+    //         try {
+    //             const decoded = jwtDecode(token);
+    //             setUsername(decoded.username || "Anonymous");
+    //             setColour(decoded.colour || "3498db");
+
+    //             // connect to websocket and join document room
+    //             if (!socket.connected) {
+    //                 socket.connect();
+    //             }
+
+    //             socket.emit("joinDocumentRoom", { 
+    //                 documentId, 
+    //                 username: decoded.username || "Anonymous", 
+    //                 colour: decoded.colour || "3498db" 
+    //             });
+
+    //         } catch (error) {
+    //             console.error("Error decoding token:", error);
+    //         }
+    //     }
+
+    //     socket.on("updateUsers", (users) => {
+    //         console.log("Active users:", users);
+    //         setActiveUsers(users);
+    //     });
+
+    //     return () => {
+    //         socket.disconnect();
+    //         socket.off("leaveDocumentRoom"); // clean up listener
+    //     };
+    // }, [documentId]);
 
     const toggleCollaboratorSearch = () => {
         setShowCollaboratorSearch(prev => !prev);
+    }
+
+    // Close collaborator search when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (collaboratorRef.current && 
+                !collaboratorRef.current.contains(event.target) && 
+                !event.target.closest('.add-collaborator-btn')) {
+                setShowCollaboratorSearch(false);
+            }
+        }
+        
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    // Show loading or error state
+    if (documentLoading) {
+        return (
+            <div className="document-page">
+                <NavBar />
+                <div className="document-loading">
+                    <p>Loading document...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="document-page">
+                <NavBar />
+                <div className="document-error">
+                    <p>{error}</p>
+                    <button onClick={() => navigate("/")}>Return to Home</button>
+                </div>
+            </div>
+        );
     }
 
     return (
@@ -213,7 +322,7 @@ export default function DocumentPage() {
             
             <div className="content-container">
                 <div className="editor-wrapper">
-                    <Editor documentId={documentId} username={username} />
+                    <Editor documentId={documentId} username={username} colour={colour} />
                 </div>
             </div>
             

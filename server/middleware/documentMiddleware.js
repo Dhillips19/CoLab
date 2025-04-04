@@ -13,8 +13,8 @@ export async function verifyDocumentExists(req, res, next) {
             });
         }
         
-        // Document exists, add it to the request for later use if needed
-        req.document = document;
+        req.document = document; 
+
         next();
     } catch (error) {
         console.error("Error verifying document:", error);

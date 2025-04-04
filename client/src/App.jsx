@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import DocumentPage from './pages/DocumentPage';
+import DocumentNotFound from './pages/DocumentNotFound';
 import LoadingSpinner from './components/Loading/LoadingSpinner';
 
 const ProtectedRoute = ({ children }) => {
@@ -27,32 +28,12 @@ const App = () => {
   
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route 
-        path="/" 
-        element={
-          <ProtectedRoute>
-            <HomePage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/change-password" 
-        element={
-          <ProtectedRoute>
-            <ChangePasswordPage />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/document/:documentId" 
-        element={
-          <ProtectedRoute>
-            <DocumentPage />
-          </ProtectedRoute>
-        } 
-      />
+      <Route path="/login" element={<LoginPage/>} />
+      <Route path="/register" element={<RegisterPage/>} />
+      <Route path="/" element={<ProtectedRoute> <HomePage/> </ProtectedRoute>} />
+      <Route path="/change-password" element={<ProtectedRoute> <ChangePasswordPage/> </ProtectedRoute>} />
+      <Route path="/document/:documentId" element={<ProtectedRoute> <DocumentPage/> </ProtectedRoute>} />
+      <Route path="/document-not-found" element={<DocumentNotFound/>} />
     </Routes>
   );
 };
