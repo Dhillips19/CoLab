@@ -30,20 +30,22 @@
 
 /* Documents List Layout - Changed from grid to flex */
 .documents-list {
-    display: grid;
-    grid-template-columns: repeat(5, 200px); /* Fixed 5 columns of 200px each */
-    justify-content: center;
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: flex-start;
+    align-items: center;
     gap: 2rem;
     padding: 1rem 0;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 /* Individual Document Item */
 .document-item {
     background-color: white;
     aspect-ratio: 8.5/11;
-    width: 100%;
-    max-width: 200px;  /* Reduced from 250px to fit more documents */
-    margin: 0 auto;
+    width: 13.4rem;
+    margin: 0;
     padding: 1.5rem;
     border-radius: 4px;
     position: relative;
