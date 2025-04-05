@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../../css/CollaboratorSearch.css';
+import '../../styles/CollaboratorSearch.css';
 
 const CollaboratorSearch = ({ documentId }) => {
     const [searchTerm, setSearchTerm] = useState('');

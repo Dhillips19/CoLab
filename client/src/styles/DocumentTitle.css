@@ -6,13 +6,16 @@
     cursor: text;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Show ... for long titles */
-    padding-right: 20px; /* Space for hover effect */
+    text-overflow: ellipsis;
+    padding-right: 20px;
     position: relative;
+    min-width: 5rem;
+    max-width: 30rem;
+    display: inline-block;
 }
 
 .title-display:after {
-    content: "✏️"; /* Pencil emoji to indicate edit */
+    content: "✏️";
     position: absolute;
     right: 0;
     top: 50%;
@@ -20,10 +23,7 @@
     font-size: 0.9rem;
     opacity: 0;
     transition: opacity 0.2s ease;
-}
 
-.title-display:hover {
-    color: #6a0dad;
 }
 
 .title-display:hover:after {
@@ -36,14 +36,11 @@
     padding: 0.25rem 0.5rem;
     border: 1px solid #ddd;
     border-radius: 4px;
-    width: 100%;
-    max-width: 500px;
-    min-width: 150px;
     outline: none;
     color: #333;
+    width: 30rem;
 }
 
 .title-input:focus {
-    border-color: #6a0dad;
-    box-shadow: 0 0 0 2px rgba(106, 13, 173, 0.2);
+    border-color: #3498db;
 }

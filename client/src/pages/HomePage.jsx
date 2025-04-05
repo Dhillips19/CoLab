@@ -2,7 +2,7 @@ import React from 'react';
 import NavBar from '../components/NavBar/NavBar';
 import CreateDocument from '../components/Documents/CreateDocument';
 import ListUserDocuments from '../components/Documents/ListUserDocuments';
-import '../css/HomePage.css';
+import '../styles/HomePage.css';
 
 export default function HomePage() {
 

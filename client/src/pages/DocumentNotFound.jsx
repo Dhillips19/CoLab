@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import NavBar from '../components/NavBar/NavBar';
 import CreateDocument from '../components/Documents/CreateDocument';
-import '../css/DocumentNotFound.css';
+import '../styles/DocumentNotFound.css';
 
 const DocumentNotFound = () => {
     const location = useLocation();

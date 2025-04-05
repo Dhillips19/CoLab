@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
-import '../../css/CreateDocument.css';
+import '../../styles/CreateDocument.css';
 
 // react create document button component
 const CreateDocument = () => {

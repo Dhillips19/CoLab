@@ -7,11 +7,11 @@ import * as awarenessProtocol from 'y-protocols/awareness';
 import { Awareness } from 'y-protocols/awareness';
 import "quill/dist/quill.snow.css";
 import socket from "../../socket/socket.js";
-import "../../css/Editor.css";
+import "../../styles/Editor.css";
 
 Quill.register('modules/cursors', QuillCursors)
 
-const Editor = ({ documentId, username, colour }) => {
+const Editor = ({ documentId, username, colour, quillRef }) => {
     const wrapperRef = useRef(null);
 
     useEffect(() => {
@@ -86,6 +86,8 @@ const Editor = ({ documentId, username, colour }) => {
                 }
             }
         });
+
+        quillRef.current = quill; // store quill instance in ref
         
         const ydoc = new Y.Doc(); // create y.js document 
 
@@ -127,8 +129,6 @@ const Editor = ({ documentId, username, colour }) => {
             awarenessProtocol.applyAwarenessUpdate(awareness, new Uint8Array(update));
         });
         
-  
-
         // cleanup 
         return() => {
             socket.off('initialState');

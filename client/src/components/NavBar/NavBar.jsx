@@ -8,7 +8,7 @@ import {
   faKey,
   faCog
 } from "@fortawesome/free-solid-svg-icons";
-import '../../css/NavBar.css';
+import '../../styles/NavBar.css';
 import { useAuth } from '../../context/AuthContext';
 
 export default function NavBar() {

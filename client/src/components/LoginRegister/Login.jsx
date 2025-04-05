@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import '../../css/LoginRegister.css';
+import '../../styles/LoginRegister.css';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';

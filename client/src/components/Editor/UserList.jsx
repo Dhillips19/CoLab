@@ -1,27 +1,5 @@
-// import React from "react";
-// import "../../css/UserList.css";
-
-// const UserList = ({ users }) => {
-//     return (
-//         <div className="user-list">
-//             {users.map((user, index) => (
-//                 <div 
-//                     key={index}
-//                     className="user-icon"
-//                     style={{ backgroundColor: user.colour }}
-//                     title={user.username} // native browser tooltip
-//                 >
-//                     {user.username.charAt(0).toUpperCase()}
-//                 </div>
-//             ))}
-//         </div>
-//     );
-// };
-
-// export default UserList;
-
 import React, { useState } from "react";
-import "../../css/UserList.css";
+import "../../styles/UserList.css";
 
 const UserList = ({ users = [] }) => {
     const [showAllUsers, setShowAllUsers] = useState(false);
