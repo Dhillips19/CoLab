@@ -1,5 +1,5 @@
 import express from 'express';
-import { createDocument, listDocuments } from '../controllers/documentController.js';
+import { createDocument, listDocuments, saveVersion, getVersions, restoreVersion } from '../controllers/documentController.js';
 import authenticateUser from '../middleware/authMiddleware.js';
 import { verifyDocumentExists } from '../middleware/documentMiddleware.js';
 
@@ -20,13 +20,13 @@ documentRouter.get('/verify/:documentId', authenticateUser, verifyDocumentExists
     });
 });
 
-// // Save document version
-// documentRouter.post('/saveVersion/:documentId', documentController.saveVersion);
+// Save document version
+documentRouter.post('/:documentId/save-version', authenticateUser, saveVersion);
 
-// // Retrieve all document versions
-// documentRouter.get('/versions/:documentId', documentController.getVersions);
+// Retrieve all document versions
+documentRouter.get('/:documentId/get-versions', authenticateUser, getVersions);
 
-// // Restore document version
-// documentRouter.post('/restore/:documentId/:versionId', documentController.restoreVersion);
+// Restore document version
+documentRouter.post('/:documentId/versions/:versionId/restore', authenticateUser, restoreVersion);
 
 export default documentRouter;

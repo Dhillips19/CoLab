@@ -9,6 +9,7 @@ import DocumentTitle from "../components/Editor/DocumentTitle";
 import UserList from "../components/Editor/UserList";
 import CollaboratorSearch from "../components/Editor/CollaboratorSearch";
 import Export from "../components/Editor/Export";
+import VersionHistory from '../components/Editor/VersionHistory';
 import socket from "../socket/socket";
 import "../styles/DocumentPage.css";
 
@@ -172,6 +173,9 @@ export default function DocumentPage() {
                     <div className="bottom-row">
                         <div className="document-export-container">
                             <Export quillRef={quillRef} titleRef={titleRef}/>
+                        </div>
+                        <div className="document-version-container">
+                            <VersionHistory documentId={documentId} quillRef={quillRef} />
                         </div>
                     </div>
                 </div>
