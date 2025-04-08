@@ -98,20 +98,14 @@ const Editor = ({ documentId, username, colour, quillRef }) => {
             color: colour
         }); // set local user state
 
-        // const ytext = ydoc.getText('quill'); // get text from this doc
+        const ytext = ydoc.getText('quill'); // get text from this doc
 
-        // // bind the quill editor to the ydoc
-        // new QuillBinding(ytext, quill, awareness);
+        // bind the quill editor to the ydoc
+        new QuillBinding(ytext, quill, awareness);
 
         // retrieve initial doc state from server and apply the update to local ydoc
         socket.on('initialState', (update) => { 
             Y.applyUpdate(ydoc, new Uint8Array(update));
-
-            const ytext = ydoc.getText('quill'); // get text from this doc
-            if (binding) {
-                binding.destroy(); // prevent duplicate bindings
-            }
-            binding = new QuillBinding(ytext, quill, awareness);
         }); 
 
         // Add this to the existing socket event listeners in Editor.jsx
