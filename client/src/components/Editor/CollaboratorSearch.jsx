@@ -90,6 +90,7 @@ const CollaboratorSearch = ({ documentId }) => {
                 {searchResults.map(user => (
                     <div key={user._id} className="user-result">
                         <span>{user.username}</span>
+                        <span>{user.email}</span>
                         <button 
                             onClick={() => addCollaborator(user._id)}
                             className="add-button"

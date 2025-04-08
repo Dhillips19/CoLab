@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import socket from "../../socket/socket.js";
 import '../../styles/VersionHistory.css';
 
 const VersionHistory = ({ documentId, quillRef }) => {
@@ -77,7 +78,7 @@ const VersionHistory = ({ documentId, quillRef }) => {
     };
 
     // Restore document to a specific version
-    const restoreVersion = async (versionNumber) => {
+    const restoreVersion = async (versionNum) => {
         const confirmRestore = window.confirm(
             'Restoring to a previous version will save your current changes as a new version. Continue?'
         );
@@ -85,7 +86,7 @@ const VersionHistory = ({ documentId, quillRef }) => {
         if (!confirmRestore) return;
         
         try {
-            const response = await fetch(`http://localhost:3001/api/documents/${documentId}/versions/${versionNumber}/restore`, {
+            const response = await fetch(`http://localhost:3001/api/documents/${documentId}/versions/${versionNum}/restore`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -96,10 +97,11 @@ const VersionHistory = ({ documentId, quillRef }) => {
                 throw new Error('Failed to restore version');
             }
             
+            socket.emit('requestLatestState', documentId);
+
             setSuccess('Document restored successfully');
+            setShowPanel(false); // Close the panel after restoring
             
-            // Refresh the page to get the restored document state
-            window.location.reload();
             
         } catch (error) {
             console.error('Error restoring version:', error);
@@ -121,7 +123,7 @@ const VersionHistory = ({ documentId, quillRef }) => {
                 <div className="version-panel">
                     <div className="panel-header">
                         <h3>Version History</h3>
-                        <button className="close-btn" onClick={() => setShowPanel(false)}>×</button>
+                        <button className="close-btn" onClick={() => setShowPanel(false)}>x</button>
                     </div>
                     
                     {error && <div className="error-message">{error}</div>}
@@ -139,7 +141,7 @@ const VersionHistory = ({ documentId, quillRef }) => {
                         ) : (
                             <ul className="versions-list">
                                 {versions.map(version => (
-                                    <li key={version.version} className="version-item">
+                                    <li key={version.versionNum} className="version-item">
                                         <div className="version-info">
                                             <span className="version-name">{version.name}</span>
                                             <span className="version-date">
@@ -147,7 +149,7 @@ const VersionHistory = ({ documentId, quillRef }) => {
                                             </span>
                                         </div>
                                         <button 
-                                            onClick={() => restoreVersion(version.version)}
+                                            onClick={() => restoreVersion(version.versionNum)}
                                             className="restore-btn"
                                         >
                                             Restore

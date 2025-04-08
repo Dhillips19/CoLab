@@ -1,13 +1,24 @@
 import express from 'express';
-import { searchUser, addCollaborator } from '../controllers/collaboratorSearchController.js';
+import { 
+    searchUser, 
+    addCollaborator, 
+    getCollaborators, 
+    removeCollaborator 
+} from '../controllers/collaboratorSearchController.js';
 import authenticateUser from '../middleware/authMiddleware.js';
 
 const editorRouter = express.Router();
 
-// create document
+// Search for users
 editorRouter.get('/search', authenticateUser, searchUser);
 
-// list documents
+// Get current collaborators
+editorRouter.get('/:documentId/collaborators', authenticateUser, getCollaborators);
+
+// Add collaborator
 editorRouter.post('/:documentId/collaborators', authenticateUser, addCollaborator);
+
+// Remove collaborator
+editorRouter.delete('/:documentId/collaborators/:userId', authenticateUser, removeCollaborator);
 
 export default editorRouter;

@@ -186,151 +186,238 @@ export async function deleteDocument(req, res) {
     try {
         const { documentId } = req.params;
         const userId = req.user?.id;
-
+        
         if (!userId) {
             return res.status(401).json({ error: "Unauthorized" });
         }
-
-        // find the document
+        
+        // Find the document
         const document = await Document.findOne({ documentId });
-
         if (!document) {
             return res.status(404).json({ error: "Document not found" });
         }
-
-        // check if user is the owner
+        
+        // Check if user is the owner
         if (document.owner.toString() !== userId) {
-            return res.status(403).json({ error: "You don't have permission to delete this document" });
+            return res.status(403).json({ error: "Only the document owner can delete it" });
         }
 
-        // delete the document from DB
+        // Get all collaborator user IDs before deleting the document
+        const collaboratorIds = document.collaborators.map(collab => collab.user);
+        
+        // Delete the document
         await Document.deleteOne({ documentId });
-
-        // remove the document from user's ownedDocuments array
+        
+        // Remove document from owner's ownedDocuments array
         await User.findByIdAndUpdate(
             userId,
-            { $pull: { ownedDocuments: document._id } },
-            { new: true }
+            { $pull: { ownedDocuments: document._id } }
         );
-
+        
+        // IMPORTANT: Remove document from all collaborators' sharedDocuments arrays
+        if (collaboratorIds.length > 0) {
+            await User.updateMany(
+                { _id: { $in: collaboratorIds } },
+                { $pull: { sharedDocuments: document._id } }
+            );
+        }
+        
         res.status(200).json({ message: "Document deleted successfully" });
         
     } catch (error) {
-        console.error("Error deleting document:", error.message);
+        console.error("Error deleting document:", error);
         res.status(500).json({ error: "Server error" });
     }
 }
 
-// Create a snapshot of the current document state
-export async function saveVersion(req, res) {
+// Function to leave a shared document
+export async function leaveDocument(req, res) {
     try {
         const { documentId } = req.params;
-        const { name } = req.body; 
+        const userId = req.user?.id;
         
-        // Find document
-        const docData = await Document.findOne({ documentId });
-        if (!docData) {
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        
+        // Find the document
+        const document = await Document.findOne({ documentId });
+        if (!document) {
             return res.status(404).json({ error: "Document not found" });
         }
         
-        // Generate version number (increment highest existing version)
-        const currentHighestVersion = docData.versions.length > 0
-            ? Math.max(...docData.versions.map(v => v.version))
-            : 0;
-        const newVersion = currentHighestVersion + 1;
+        // Check if the user is the owner (owners can't leave their own documents)
+        if (document.owner.toString() === userId) {
+            return res.status(400).json({ error: "You can't leave a document you own. Try deleting it instead." });
+        }
         
-        const ydoc = new Y.Doc();
-        Y.applyUpdate(ydoc, new Uint8Array(docData.state)); // Apply the current state to the Y.Doc instance
-        const snapshot = Y.encodeSnapshot(Y.snapshot(ydoc))
+        // Check if the user is a collaborator
+        const isCollaborator = document.collaborators.some(
+            collab => collab.user.toString() === userId
+        );
         
-        // Add the new version to the document
-        docData.versions.push({
-            version: newVersion,
-            snapshot: Buffer.from(snapshot),
-            name: name || `Version ${newVersion}`,
-            timestamp: new Date()
-        });
+        if (!isCollaborator) {
+            return res.status(400).json({ error: "You're not a collaborator on this document" });
+        }
         
-        await docData.save();
+        // Remove the user from collaborators
+        await Document.updateOne(
+            { documentId },
+            { $pull: { collaborators: { user: userId } } }
+        );
         
-        res.status(201).json({
-            message: "Version saved successfully",
-            version: newVersion
-        });
+        // Remove the document from user's sharedDocuments
+        await User.findByIdAndUpdate(
+            userId,
+            { $pull: { sharedDocuments: document._id } }
+        );
         
+        res.status(200).json({ message: "Successfully left the document" });
     } catch (error) {
-        console.error("Error saving version:", error);
-        res.status(500).json({ error: "Failed to save version" });
+        console.error("Error leaving document:", error);
+        res.status(500).json({ error: "Server error" });
     }
 }
 
-// Retrieve list of versions for a document
-export async function getVersions(req, res) {
-    try {
-        const { documentId } = req.params;
+// // Create a snapshot of the current document state
+// export async function saveVersion(req, res) {
+//     try {
+//         const { documentId } = req.params;
+//         const { name } = req.body; 
         
-        // Find document
-        const docData = await Document.findOne({ documentId })
+//         // Find document
+//         const docData = await Document.findOne({ documentId });
+//         if (!docData) {
+//             return res.status(404).json({ error: "Document not found" });
+//         }
         
-        if (!docData) {
-            return res.status(404).json({ error: "Document not found" });
-        }
+//         // Generate version number (increment highest existing version)
+//         const currentHighestVersion = docData.versions.length > 0
+//             ? Math.max(...docData.versions.map(v => v.versionNum))
+//             : 0;
+//         const newVersionNum = currentHighestVersion + 1;
         
-        const versions = docData.versions.map((v, i) => ({
-            id: i,
-            version: v.version,
-            name: v.name || `Version ${v.version}`,
-            timestamp: v.timestamp,
-        }));
-        
-        res.status(200).json({ versions });
-        
-    } catch (error) {
-        console.error("Error retrieving versions:", error);
-        res.status(500).json({ error: "Failed to retrieve versions" });
-    }
-}
+//         const ydoc = new Y.Doc();
+//         const ytext = ydoc.getText('quill');
+//     if (!ytext) ydoc.getText('quill'); // force initialize if missing
 
-// Restore document to a specific version
-export async function restoreVersion(req, res) {
-    try {
-        const { documentId, versionNumber } = req.params;
-        
-        // Find document
-        const docData = await Document.findOne({ documentId });
-        
-        if (!docData) {
-            return res.status(404).json({ error: "Document not found" });
-        }
-        
-        // Find the version to restore
-        const version = docData.versions.find(v => v.version === parseInt(versionNumber));
-        
-        if (!version) {
-            return res.status(404).json({ error: "Version not found" });
-        }
-        
-        // Then restore the document state to the selected version
-        const snapshotBytes = new Uint8Array(docData.versions[versionNumber].snapshot);
-        const latestYdoc = new Y.doc();
+//         Y.applyUpdate(ydoc, new Uint8Array(docData.state)); // Apply the current state to the Y.Doc instance
 
-        Y.applyUpdate(latestYdoc, new Uint8Array(docData.state))
+//         if (!ydoc.get('quill')) {
+//             console.warn("No 'quill' type found before snapshot.");
+//         }
 
-        const snapshot = Y.decodeSnapshot(snapshotBytes);
-        const snapshotDoc = Y.createDocFromSnapshot(latestYdoc, snapshot);
-        const restoredUpdate = Y.encodeStateAsUpdate(snapshotDoc);
+//         const snapshot = Y.encodeSnapshot(Y.snapshot(ydoc))
         
-        docData.state = Buffer.from(restoredUpdate);
+//         // Add the new version to the document
+//         docData.versions.push({
+//             versionNum: newVersionNum,
+//             snapshot: Buffer.from(snapshot),
+//             name: name || `Version ${newVersionNum}`,
+//             timestamp: new Date()
+//         });
+        
+//         await docData.save();
+        
+//         res.status(201).json({
+//             message: "Version saved successfully",
+//             versionNum: newVersionNum
+//         });
+        
+//     } catch (error) {
+//         console.error("Error saving version:", error);
+//         res.status(500).json({ error: "Failed to save version" });
+//     }
+// }
 
-        await docData.save();
+// // Retrieve list of versions for a document
+// export async function getVersions(req, res) {
+//     try {
+//         const { documentId } = req.params;
         
-        res.status(200).json({ 
-            message: "Document restored successfully",
-            version: parseInt(versionId)
-        });
+//         // Find document
+//         const docData = await Document.findOne({ documentId })
         
-    } catch (error) {
-        console.error("Error restoring version:", error);
-        res.status(500).json({ error: "Failed to restore version" });
-    }
-}
+//         if (!docData) {
+//             return res.status(404).json({ error: "Document not found" });
+//         }
+        
+//         const versions = docData.versions.map((v) => ({
+//             versionNum: v.versionNum,
+//             name: v.name || `Version ${v.versionNum}`,
+//             timestamp: v.timestamp,
+//         }));
+        
+//         res.status(200).json({ versions });
+        
+//     } catch (error) {
+//         console.error("Error retrieving versions:", error);
+//         res.status(500).json({ error: "Failed to retrieve versions" });
+//     }
+// }
+
+// // Restore document to a specific version
+// export async function restoreVersion(req, res) {
+//     try {
+//         const { documentId, versionNum } = req.params;
+//         const versionNumInt = parseInt(versionNum, 10);
+
+//         // Fetch document and version
+//         const docData = await Document.findOne({ documentId });
+//         if (!docData) return res.status(404).json({ error: "Document not found" });
+
+//         const version = docData.versions.find(v => v.versionNum === versionNumInt);
+//         if (!version) return res.status(404).json({ error: "Version not found" });
+
+//         // ✅ STEP 1: Save current state as a version before restoring
+//         const currentYdoc = new Y.Doc();
+//         Y.applyUpdate(currentYdoc, new Uint8Array(docData.state));
+//         const currentSnapshot = Y.encodeSnapshot(Y.snapshot(currentYdoc));
+
+//         const currentHighestVersion = docData.versions.length > 0
+//             ? Math.max(...docData.versions.map(v => v.versionNum))
+//             : 0;
+//         const nextVersionNum = currentHighestVersion + 1;
+
+//         docData.versions.push({
+//             versionNum: nextVersionNum,
+//             snapshot: Buffer.from(currentSnapshot),
+//             name: `Auto-saved before restore`,
+//             timestamp: new Date()
+//         });
+
+//         // ✅ STEP 2: Decode snapshot and rebuild document
+//         const snapshotBytes = new Uint8Array(version.snapshot);
+//         const baseYdoc = new Y.Doc({ gc: false });
+//         Y.applyUpdate(baseYdoc, new Uint8Array(docData.state)); // for structure
+
+//         const snapshot = Y.decodeSnapshot(snapshotBytes);
+//         const restoredDoc = Y.createDocFromSnapshot(baseYdoc, snapshot);
+
+//         let ytext = restoredDoc.getText('quill');
+
+//         if (!ytext || !ytext instanceof Y.Text) {
+//             console.log("No 'quill' type found before snapshot.");
+//             ytext = restoredDoc.getText('quill'); // create a new Y.Text if not found
+//             ytext.insert(0, ""); // insert empty string to initialize
+//         } 
+
+//         // ✅ STEP 3: Serialize full update from restored doc
+//         const restoredUpdate = Y.encodeStateAsUpdate(restoredDoc);
+
+//         // ✅ STEP 4: Save to DB
+//         docData.state = Buffer.from(restoredUpdate);
+//         await docData.save();
+
+//         res.status(200).json({
+//             message: "Document restored successfully",
+//             restoredTo: versionNumInt,
+//             previousSavedAs: nextVersionNum
+//         });
+
+//     } catch (error) {
+//         console.error("Error restoring version:", error);
+//         res.status(500).json({ error: "Failed to restore version" });
+//     }
+// }
+

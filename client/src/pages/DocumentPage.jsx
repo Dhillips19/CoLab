@@ -1,5 +1,3 @@
-// 
-
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
@@ -7,7 +5,7 @@ import Editor from "../components/Editor/Editor";
 import Chat from "../components/Editor/Chat";
 import DocumentTitle from "../components/Editor/DocumentTitle";
 import UserList from "../components/Editor/UserList";
-import CollaboratorSearch from "../components/Editor/CollaboratorSearch";
+import ManageCollaborators from "../components/Editor/ManageCollaborators"
 import Export from "../components/Editor/Export";
 import VersionHistory from '../components/Editor/VersionHistory';
 import socket from "../socket/socket";
@@ -19,7 +17,7 @@ export default function DocumentPage() {
     const [username, setUsername] = useState("");
     const [colour, setColour] = useState("");
     const [activeUsers, setActiveUsers] = useState([]);
-    const [showCollaboratorSearch, setShowCollaboratorSearch] = useState(false);
+    const [showManageCollaborators, setShowManageCollaborators] = useState(false);
     const [documentLoading, setDocumentLoading] = useState(true);
     const [error, setError] = useState("");
     const collaboratorRef = useRef(null);
@@ -112,7 +110,7 @@ export default function DocumentPage() {
     };
 
     const toggleCollaboratorSearch = () => {
-        setShowCollaboratorSearch(prev => !prev);
+        setShowManageCollaborators(prev => !prev);
     }
 
     // Close collaborator search when clicking outside
@@ -120,8 +118,8 @@ export default function DocumentPage() {
         function handleClickOutside(event) {
             if (collaboratorRef.current && 
                 !collaboratorRef.current.contains(event.target) && 
-                !event.target.closest('.add-collaborator-btn')) {
-                setShowCollaboratorSearch(false);
+                !event.target.closest('.manage-collaborators-btn')) {
+                setShowManageCollaborators(false);
             }
         }
         
@@ -186,10 +184,10 @@ export default function DocumentPage() {
                     </div>
                     
                     <button 
-                        className="add-collaborator-btn"
+                        className="manage-collaborators-btn"
                         onClick={toggleCollaboratorSearch}
                     >
-                        + Add Collaborator
+                        Share
                     </button>
                 </div>
                 
@@ -203,19 +201,19 @@ export default function DocumentPage() {
             
             {/* Collaborator search panel */}
             <div 
-                className={`collaborator-search-container ${showCollaboratorSearch ? 'open' : ''}`}
+                className={`collaborator-management-container ${showManageCollaborators ? 'open' : ''}`}
                 ref={collaboratorRef}
             >
                 <div className="panel-header">
-                    <h3>Add Collaborators</h3>
+                    <h3>Manage Collaborators</h3>
                     <button 
                         className="close-panel-btn" 
-                        onClick={() => setShowCollaboratorSearch(false)}
+                        onClick={() => setShowManageCollaborators(false)}
                     >
                         ×
                     </button>
                 </div>
-                <CollaboratorSearch documentId={documentId} />
+                <ManageCollaborators documentId={documentId} />
             </div>
             
             {/* Content area */}

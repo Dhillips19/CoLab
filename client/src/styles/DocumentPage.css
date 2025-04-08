@@ -73,7 +73,7 @@
 }
 
 /* Add collaborator button */
-.add-collaborator-btn {
+.manage-collaborators-btn {
     background-color: #3498db;
     color: white;
     border: none;
@@ -84,25 +84,25 @@
     transition: background-color 0.2s;
 }
 
-.add-collaborator-btn:hover {
+.manage-collaborators-btn:hover {
     background-color: #2980b9;
 }
 
 /* Collaborator search panel */
-.collaborator-search-container {
+.collaborator-management-container {
     position: absolute;
-    top: 3.5rem;
+    top: 4.5rem;
     right: 1rem;
     background-color: white;
     border-radius: 4px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    width: 320px;
+    width: 24rem;
     z-index: 10;
     display: none;
     border: 1px solid #e1e4e8;
 }
 
-.collaborator-search-container.open {
+.collaborator-management-container.open {
     display: block;
 }
 
@@ -111,7 +111,6 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    border-bottom: 1px solid #e1e4e8;
 }
 
 .panel-header h3 {

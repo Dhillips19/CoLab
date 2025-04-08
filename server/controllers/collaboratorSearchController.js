@@ -62,3 +62,64 @@ export async function addCollaborator(req, res) {
         res.status(500).json({ message: 'Server error' });
     }
 }
+
+export async function getCollaborators(req, res) {
+    try {
+        const { documentId } = req.params;
+        
+        // Find document
+        const doc = await Document.findOne({ documentId });
+        if (!doc) {
+            return res.status(404).json({ message: 'Document not found' });
+        }
+        
+        // Check if user is the owner
+        if (doc.owner.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Only document owners can manage collaborators' });
+        }
+        
+        // Get collaborator user details
+        const collaboratorIds = doc.collaborators.map(collab => collab.user);
+        const collaborators = await User.find({ _id: { $in: collaboratorIds } })
+            .select('username email _id');
+        
+        res.json(collaborators);
+    } catch (error) {
+        console.error('Error fetching collaborators:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
+
+export async function removeCollaborator(req, res) {
+    try {
+        const { documentId, userId } = req.params;
+        
+        // Find document
+        const doc = await Document.findOne({ documentId });
+        if (!doc) {
+            return res.status(404).json({ message: 'Document not found' });
+        }
+        
+        // Check if user is the owner
+        if (doc.owner.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Only document owners can remove collaborators' });
+        }
+        
+        // Remove collaborator from document
+        await Document.findOneAndUpdate(
+            { documentId },
+            { $pull: { collaborators: { user: userId } } }
+        );
+        
+        // Remove document from user's shared documents
+        await User.findByIdAndUpdate(
+            userId,
+            { $pull: { sharedDocuments: doc._id } }
+        );
+        
+        res.json({ message: 'Collaborator removed successfully' });
+    } catch (error) {
+        console.error('Error removing collaborator:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}

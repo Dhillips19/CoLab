@@ -23,7 +23,7 @@ const DocumentSchema = new mongoose.Schema({
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     }],
     versions: [{
-        version: { type: Number, required: true },
+        versionNum: { type: Number, required: true },
         snapshot: { type: Buffer, required: true },
         name: { type: String, required: true },
         timestamp: { type: Date, default: Date.now }

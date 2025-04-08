@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/ListUserDocuments.css";
 
 const ListUserDocuments = () => {
@@ -8,6 +10,7 @@ const ListUserDocuments = () => {
     const [listSelection, setListSelection] = useState("ownedDocuments");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [actionStatus, setActionStatus] = useState({ type: "", message: "" });
     
     const navigate = useNavigate();
 
@@ -42,6 +45,17 @@ const ListUserDocuments = () => {
         fetchDocuments();
     }, []);
 
+    // Clear action status after 3 seconds
+    useEffect(() => {
+        if (actionStatus.message) {
+            const timer = setTimeout(() => {
+                setActionStatus({ type: "", message: "" });
+            }, 3000);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [actionStatus]);
+
     // Get current documents based on selection
     const currentDocuments = listSelection === "ownedDocuments" 
         ? ownedDocuments 
@@ -52,9 +66,77 @@ const ListUserDocuments = () => {
         setListSelection(tab);
     };
 
+    // Function to delete a document - UPDATED to use POST endpoint
+    const handleDeleteDocument = async (e, documentId) => {
+        e.preventDefault(); // Prevent navigation
+        e.stopPropagation(); // Stop event bubbling
+        
+        // Confirm deletion
+        const confirmDelete = window.confirm("Are you sure you want to delete this document? This action cannot be undone.");
+        if (!confirmDelete) return;
+        
+        try {
+            // Changed from DELETE to POST to match the route in documentRoutes.js
+            const response = await fetch(`http://localhost:3001/api/documents/delete/${documentId}`, {
+                method: "POST",  // This matches your route definition
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to delete document");
+            }
+            
+            // Update the document list
+            setOwnedDocuments(ownedDocuments.filter(doc => doc.documentId !== documentId));
+            setActionStatus({ type: "success", message: "Document deleted successfully" });
+        } catch (error) {
+            console.error("Error deleting document:", error);
+            setActionStatus({ type: "error", message: error.message });
+        }
+    };
+
+    // Function to leave a shared document
+    const handleLeaveDocument = async (e, documentId) => {
+        e.preventDefault(); // Prevent navigation
+        e.stopPropagation(); // Stop event bubbling
+        
+        // Confirm leaving
+        const confirmLeave = window.confirm("Are you sure you want to leave this document? You'll need to be re-invited to access it again.");
+        if (!confirmLeave) return;
+        
+        try {
+            const response = await fetch(`http://localhost:3001/api/documents/${documentId}/leave`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json"
+                }
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Failed to leave document");
+            }
+            
+            // Update the document list
+            setSharedDocuments(sharedDocuments.filter(doc => doc.documentId !== documentId));
+            setActionStatus({ type: "success", message: "You've left the document" });
+        } catch (error) {
+            console.error("Error leaving document:", error);
+            setActionStatus({ type: "error", message: error.message });
+        }
+    };
+
+    const handleDocumentClick = (documentId) => {
+        navigate(`/document/${documentId}`);
+    };
+
     return (
         <div className='documents-container'>
-
             {/* Tab Navigation */}
             <div className="document-tabs">
                 <button 
@@ -70,6 +152,13 @@ const ListUserDocuments = () => {
                     Shared With Me {sharedDocuments.length > 0 && `(${sharedDocuments.length})`}
                 </button>
             </div>
+
+            {/* Status Messages */}
+            {actionStatus.message && (
+                <div className={`action-status ${actionStatus.type}`}>
+                    {actionStatus.message}
+                </div>
+            )}
 
             {/* Loading & Error Handling */}
             {loading && <p className="loading-message">Loading documents...</p>}
@@ -88,16 +177,42 @@ const ListUserDocuments = () => {
                     ) : (
                         <div className='documents-list'>
                             {currentDocuments.map((doc) => (
-                                <a
-                                    key={doc._id}
-                                    href={`/document/${doc.documentId}`}
-                                    className='document-item'
-                                >
-                                    <h3 className='document-title'>{doc.documentTitle}</h3>
-                                    <p className='document-date'>
-                                        Last Updated: {new Date(doc.updatedAt).toLocaleString()}
-                                    </p>
-                                </a>
+                                <div key={doc._id} className='document-item-wrapper'>
+                                    <div 
+                                        className='document-item'
+                                        onClick={() => handleDocumentClick(doc.documentId)}
+                                    >
+                                        <h3 className='document-title'>{doc.documentTitle}</h3>
+                                        <p className='document-date'>
+                                            Last Updated: {new Date(doc.updatedAt).toLocaleString('en-GB', {
+                                                day: 'numeric',
+                                                month: 'numeric',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </p>
+                                        
+                                        {/* Delete/Leave button */}
+                                        {listSelection === "ownedDocuments" ? (
+                                            <button 
+                                                className="document-delete-btn"
+                                                onClick={(e) => handleDeleteDocument(e, doc.documentId)}
+                                                title="Delete document"
+                                            >
+                                                <FontAwesomeIcon icon={faTrash} />
+                                            </button>
+                                        ) : (
+                                            <button 
+                                                className="document-leave-btn"
+                                                onClick={(e) => handleLeaveDocument(e, doc.documentId)}
+                                                title="Leave document"
+                                            >
+                                                <FontAwesomeIcon icon={faSignOutAlt} />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                             ))}
                         </div>
                     )}

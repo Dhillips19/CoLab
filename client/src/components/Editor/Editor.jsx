@@ -89,23 +89,47 @@ const Editor = ({ documentId, username, colour, quillRef }) => {
 
         quillRef.current = quill; // store quill instance in ref
         
-        const ydoc = new Y.Doc(); // create y.js document 
+        let binding = null;
 
+        const ydoc = new Y.Doc(); // create y.js document 
         const awareness = new Awareness(ydoc); // create awareness instance for user presence
         awareness.setLocalStateField('user', {
             name: username,
             color: colour
         }); // set local user state
 
-        const ytext = ydoc.getText('quill'); // get text from this doc
+        // const ytext = ydoc.getText('quill'); // get text from this doc
 
-        // bind the quill editor to the ydoc
-        new QuillBinding(ytext, quill, awareness);
+        // // bind the quill editor to the ydoc
+        // new QuillBinding(ytext, quill, awareness);
 
         // retrieve initial doc state from server and apply the update to local ydoc
         socket.on('initialState', (update) => { 
             Y.applyUpdate(ydoc, new Uint8Array(update));
+
+            const ytext = ydoc.getText('quill'); // get text from this doc
+            if (binding) {
+                binding.destroy(); // prevent duplicate bindings
+            }
+            binding = new QuillBinding(ytext, quill, awareness);
         }); 
+
+        // Add this to the existing socket event listeners in Editor.jsx
+        socket.on('latestState', (update) => {
+            console.log('Received latest state after version restore');
+            
+            const existing = ydoc.getText('quill');
+            if (existing) existing.delete(0, existing.length);
+
+            // Apply the update to the ydoc
+            Y.applyUpdate(ydoc, new Uint8Array(update));
+
+            const restoredText = ydoc.getText('quill');
+            if (binding) {
+                binding.destroy(); // prevent duplicate bindings
+            }
+            binding = new QuillBinding(restoredText, quill, awareness);
+        });
 
         // listen for updates from server and apply the update to local ydoc
         socket.on('update', (update) => {  
@@ -133,6 +157,7 @@ const Editor = ({ documentId, username, colour, quillRef }) => {
         return() => {
             socket.off('initialState');
             socket.off('update');
+            socket.off('latestState')
             ydoc.destroy();
         }
     }, [documentId]);

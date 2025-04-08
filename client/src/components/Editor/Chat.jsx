@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import socket from "../../socket/socket";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes, faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import "../../styles/Chat.css";
 
 const Chat = ({ documentId, username }) => {
@@ -66,7 +68,7 @@ const Chat = ({ documentId, username }) => {
     return (
         <div className="chat-container">
             <button className="chat-toggle" onClick={() => setIsOpen(!isOpen)}>
-                {isOpen ? "✕" : "💬"}
+                {isOpen ? <FontAwesomeIcon icon={faTimes} /> : <FontAwesomeIcon icon={faCommentDots} />}
             </button>
 
             {isOpen && (
@@ -84,7 +86,7 @@ const Chat = ({ documentId, username }) => {
                             >
                                 <strong>{msg.username}</strong>
                                 <p>{msg.message}</p>
-                                <small>{new Date(msg.timestamp).toLocaleTimeString()}</small>
+                                <small>{new Date(msg.timestamp).toLocaleString('en-GB')}</small>
                             </div>
                         ))}
                         <div ref={messagesEndRef} />

@@ -2,7 +2,7 @@
 .chat-container {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    right: 0px;
     width: 350px;
     z-index: 100;
 }
@@ -12,11 +12,11 @@
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: #6a0dad;
+    background: #3498db;
     color: white;
     border: none;
-    width: 50px;
-    height: 50px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     font-size: 22px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -29,7 +29,7 @@
 
 .chat-toggle:hover {
     transform: scale(1.05);
-    background: #5a0cad;
+    background: #2980b9;
 }
 
 /* Chat Panel */
@@ -41,7 +41,8 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    height: 450px;
+    height: 30rem;
+    width: 20rem;
     transform-origin: bottom right;
     animation: fadeIn 0.3s ease;
 }
@@ -58,7 +59,7 @@
 }
 
 .chat-panel-header {
-    background: #6a0dad;
+    background: #3498db;
     color: white;
     padding: 12px 15px;
     font-weight: bold;
@@ -85,6 +86,9 @@
     max-width: 75%;
     position: relative;
     line-height: 1.4;
+    word-wrap: break-word; /* Add this to wrap long words */
+    overflow-wrap: break-word; /* Modern browsers */
+    white-space: pre-wrap; /* Preserve line breaks but wrap text */
 }
 
 .chat-message strong {
@@ -95,6 +99,8 @@
 
 .chat-message p {
     margin: 0;
+    overflow-wrap: break-word; /* Add this for paragraph content */
+    word-break: break-word; /* For very long words */
 }
 
 .chat-message small {
@@ -113,7 +119,7 @@
 }
 
 .own-message {
-    background: #6a0dad;
+    background: #3498db;
     color: white;
     align-self: flex-end;
     border-bottom-right-radius: 4px;
@@ -138,11 +144,11 @@
 }
 
 .chat-input input:focus {
-    border-color: #6a0dad;
+    border-color: #3498db;
 }
 
 .chat-input button {
-    background: #6a0dad;
+    background: #3498db;
     color: white;
     border: none;
     border-radius: 20px;
@@ -153,5 +159,5 @@
 }
 
 .chat-input button:hover {
-    background: #5a0cad;
+    background: #2980b9;
 }
