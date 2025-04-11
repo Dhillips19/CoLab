@@ -1,32 +1,3 @@
-/* .editor-container {
-    position: relative;
-}
-
-.editor-container .ql-toolbar {
-    position: sticky;
-    width: 100%;
-    background-color: rgb(223, 225, 226);
-    z-index: 100; /* Below header but above content 
-    display: flex;
-    justify-content: center;
-    border-color: rgb(223, 225, 226);
-} 
-
-.editor-container .ql-editor {
-    width: 862px;
-    min-height: 1066px;
-    padding: 2.5cm;
-    margin: 1rem;
-    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.5);
-    background-color: white;
-}
-
-.editor-container .ql-container {
-    border: none;
-    display: flex;
-    justify-content: center;
-}
-*/
 
 .editor-container {
     position: relative;
@@ -53,41 +24,6 @@
     box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.5);
     background-color: white;
 }
-
-/* .editor-container .ql-container {
-    border: none;
-    display: flex;
-    justify-content: center;
-} */
-
-/* .editor-container .ql-editor {
-    width: 21cm;
-    min-height: 29.7cm;
-    padding: 2.5cm;
-    margin: 3rem;
-    box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.5);
-    background-color: white;
-}
-
-.editor-container .ql-container {
-    border: none;
-    display: flex;
-    justify-content: center;
-}
-
-.editor-container .ql-toolbar {
-    display: flex;
-    justify-content: center;
-    position: sticky;
-    top: var(--nav-bar-height);
-    z-index: 1;
-    border-radius: 1rem;
-    border-color: rgb(223, 225, 226);
-    padding: 0.5rem;
-    margin-left: 7rem;
-    margin-right: 7rem;
-    background-color: rgb(223, 225, 226);
-} */
 
 .editor-container .ql-editor {
     width: 8.5in;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope, faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/LoginRegister.css';
@@ -15,6 +16,7 @@ const Register = () => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,9 +35,14 @@ const Register = () => {
         }
 
         try {
-            const res = await axios.post("http://localhost:3001/api/auth/register", formData);
+            await axios.post("http://localhost:3001/api/auth/register", formData);
             setSuccess("Account created successfully! You can now login.");
             setFormData({ username: "", email: "", password: "", confirmPassword: "" });
+            
+            setTimeout(() => {
+                navigate("/login", { state: { message: "Account created successfully! You can now login." } });
+            }, 1000);
+
         } catch (error) {
             setError(error.response?.data?.message || "Registration failed");
         } finally {

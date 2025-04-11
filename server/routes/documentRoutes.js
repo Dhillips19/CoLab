@@ -1,7 +1,7 @@
 import express from 'express';
 import { createDocument, listDocuments, deleteDocument, leaveDocument } from '../controllers/documentController.js';
 import authenticateUser from '../middleware/authMiddleware.js';
-import { verifyDocumentExists } from '../middleware/documentMiddleware.js';
+import { verifyDocumentAccessible } from '../middleware/documentMiddleware.js';
 
 const documentRouter = express.Router();
 
@@ -12,7 +12,7 @@ documentRouter.post('/create', authenticateUser, createDocument);
 documentRouter.get('/list', authenticateUser, listDocuments);
 
 // verify document exists middleware
-documentRouter.get('/verify/:documentId', authenticateUser, verifyDocumentExists, (req, res) => {
+documentRouter.get('/verify/:documentId', authenticateUser, verifyDocumentAccessible, (req, res) => {
     return res.status(200).json({ 
         exists: true,
         documentId: req.document.documentId,
@@ -20,17 +20,10 @@ documentRouter.get('/verify/:documentId', authenticateUser, verifyDocumentExists
     });
 });
 
+// delete document
 documentRouter.post('/delete/:documentId', authenticateUser, deleteDocument);
 
+// leave document
 documentRouter.post('/:documentId/leave', authenticateUser, leaveDocument);
-
-// Save document version
-// documentRouter.post('/:documentId/save-version', authenticateUser, saveVersion);
-
-// // Retrieve all document versions
-// documentRouter.get('/:documentId/get-versions', authenticateUser, getVersions);
-
-// // Restore document version
-// documentRouter.post('/:documentId/versions/:versionNum/restore', authenticateUser, restoreVersion);
 
 export default documentRouter;

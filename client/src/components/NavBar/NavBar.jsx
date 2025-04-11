@@ -1,13 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { 
-  faUser, 
-  faSignOutAlt,
-  faHome,
-  faKey,
-  faCog
-} from "@fortawesome/free-solid-svg-icons";
+import { faUser, faSignOutAlt, faHome, faKey, faCog} from "@fortawesome/free-solid-svg-icons";
 import '../../styles/NavBar.css';
 import { useAuth } from '../../context/AuthContext';
 

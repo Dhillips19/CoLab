@@ -28,16 +28,15 @@ const authenticateUser = async (req, res, next) => {
             next();
             
         } catch (jwtError) {
-            // Handle specific JWT errors
+            // handle specific JWT error
             if (jwtError.name === 'TokenExpiredError') {
                 return res.status(401).json({ 
                     error: "Token has expired.",
                     expired: true
                 });
             }
-            throw jwtError; // Re-throw for general error handling
+            throw jwtError; // throw error in case of other errors
         }
-
     } catch (error) {
         console.error("Authentication error:", error);
         return res.status(401).json({ error: "Invalid token." });

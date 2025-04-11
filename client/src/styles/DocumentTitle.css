@@ -1,3 +1,7 @@
+.document-title-container {
+    width: 15rem;
+}
+
 .title-display {
     margin: 0;
     font-size: 1.5rem;
@@ -10,7 +14,7 @@
     padding-right: 20px;
     position: relative;
     min-width: 5rem;
-    max-width: 30rem;
+    max-width: 15rem;
     display: inline-block;
 }
 
@@ -38,7 +42,7 @@
     border-radius: 4px;
     outline: none;
     color: #333;
-    width: 30rem;
+    width: 15rem;
 }
 
 .title-input:focus {

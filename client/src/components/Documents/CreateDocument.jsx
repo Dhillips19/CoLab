@@ -2,18 +2,19 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom';
 import '../../styles/CreateDocument.css';
 
-// react create document button component
+// create document component
 const CreateDocument = () => {
 
     const navigate = useNavigate();
     const location = useLocation(); 
     const [isHomePage, setIsHomePage] = useState("");
     
+    // set isHomePage state based on current location
     useEffect(() => {
         setIsHomePage(location.pathname === "/");
     }, [location.pathname]);
 
-    // function to handle create document
+    // function to handle creating new document
     const handleCreateDocument = async () => {
         try {
             const response = await fetch('http://localhost:3001/api/documents/create', { // use create api
@@ -40,9 +41,11 @@ const CreateDocument = () => {
             alert("Failed to create document.");
         }
     };
+
     // display create document button
     return (
         <div className="create-document-container">
+            {/* class name changes based on if button is on homepage - for styling */}
             <button 
                 className={isHomePage ? 'create-document-button-homepage' : 'create-document-button'} 
                 onClick={handleCreateDocument}

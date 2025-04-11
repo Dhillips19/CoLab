@@ -7,14 +7,16 @@ import DocumentTitle from "../components/Editor/DocumentTitle";
 import UserList from "../components/Editor/UserList";
 import ManageCollaborators from "../components/Editor/ManageCollaborators"
 import Export from "../components/Editor/Export";
-import VersionHistory from '../components/Editor/VersionHistory';
 import socket from "../socket/socket";
 import "../styles/DocumentPage.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 
 export default function DocumentPage() {
     const {documentId} = useParams();
     const navigate = useNavigate();
     const [username, setUsername] = useState("");
+    const [isDocumentOwner, setIsDocumentOwner] = useState(false);
     const [colour, setColour] = useState("");
     const [activeUsers, setActiveUsers] = useState([]);
     const [showManageCollaborators, setShowManageCollaborators] = useState(false);
@@ -30,12 +32,14 @@ export default function DocumentPage() {
                 setDocumentLoading(true);
                 setError("");
 
+                // check if user is logged in
                 const token = localStorage.getItem("token");
                 if (!token) {
                     navigate("/login");
                     return;
                 }
                 
+                // Verify document ID and check if user has access
                 const response = await fetch(`http://localhost:3001/api/documents/verify/${documentId}`, {
                     method: "GET",
                     headers: {
@@ -44,16 +48,87 @@ export default function DocumentPage() {
                     }
                 });
                 
+                // if document does not exist
                 if (response.status === 404) {
                     navigate("/document-not-found", { state: { documentId } });
                     return;
                 }
                 
+                // if document exists but user does not have access
+                if (response.status === 403) {
+                    setError("You don't have permission to access this document.");
+                    return;
+                }
+                
+                // throw error if response is not ok
                 if (!response.ok) {
                     throw new Error(`Error: ${response.statusText}`);
                 }
+
+                // get document data to store owner
+                const data = await response.json();
+                const isOwner = data.owner;
                 
-                // Document exists, proceed with socket setup
+                // set is owner state
+                setIsDocumentOwner(isOwner);
+                
+                const setupSocketConnection = () => {
+                    // Get username from token
+                    const token = localStorage.getItem("token");
+                    if (token) {
+                        try {
+                            const decoded = jwtDecode(token);
+                            setUsername(decoded.username || "Anonymous");
+                            setColour(decoded.colour || "3498db");
+            
+                            // connect to websocket and join document room
+                            if (socket.connected) {
+                                console.log("Socket already connected, forcing reconnection");
+                                socket.disconnect();
+                                socket.connect();
+                            } else if (!socket.connected) {
+                                console.log("Socket not connected, connecting now");
+                                socket.connect();
+                            }
+            
+                            socket.off("documentError");
+                            socket.off("updateUsers");
+                            socket.off("initialState");
+                            socket.off("updateTitle");
+                            socket.off("loadMessages");
+                            
+                            socket.on("documentError", (error) => {
+                                if(error.code === "DOCUMENT_NOT_FOUND") {
+                                    navigate("/document-not-found", { state: { documentId } });
+                                } else if(error.code === "ACCESS_DENIED") {
+                                    setError("You don't have permission to access this document");
+                                }
+                            });
+            
+                            socket.emit("joinDocumentRoom", { 
+                                documentId, 
+                                username: decoded.username, 
+                                colour: decoded.colour
+                            });
+            
+                        } catch (error) {
+                            console.error("Error decoding token:", error);
+                        }
+                    }
+            
+                    socket.on("updateUsers", (users) => {
+                        console.log("Active users:", users);
+                        setActiveUsers(users);
+                    });
+            
+                    return () => {
+                        socket.emit("leaveDocumentRoom", documentId);
+                        socket.off("updateUsers");
+                        socket.off("documentError");
+                    };
+                };
+                
+                // setup socket
                 setupSocketConnection();
                 
             } catch (error) {
@@ -67,47 +142,25 @@ export default function DocumentPage() {
         verifyDocument();
     }, [documentId, navigate]);
 
-    const setupSocketConnection = () => {
-        // Get username from token
-        const token = localStorage.getItem("token");
-        if (token) {
-            try {
-                const decoded = jwtDecode(token);
-                setUsername(decoded.username || "Anonymous");
-                setColour(decoded.colour || "3498db");
-
-                // connect to websocket and join document room
-                if (!socket.connected) {
-                    socket.connect();
-                }
-                
-                socket.on("documentError", (error) => {
-                    if(error.code === "DOCUMENT_NOT_FOUND") {
-                        navigate("/document-not-found", { state: { documentId } });
-                    }
-                });
-
-                socket.emit("joinDocumentRoom", { 
-                    documentId, 
-                    username: decoded.username || "Anonymous", 
-                    colour: decoded.colour || "3498db" 
-                });
-
-            } catch (error) {
-                console.error("Error decoding token:", error);
-            }
-        }
-
-        socket.on("updateUsers", (users) => {
-            console.log("Active users:", users);
-            setActiveUsers(users);
-        });
-
-        return () => {
-            socket.disconnect();
-            socket.off("leaveDocumentRoom"); // clean up listener
+    useEffect(() => {
+        // This function runs when the user is about to leave the page
+        const handleBeforeUnload = () => {
+            console.log(`Page unloading, leaving document room: ${documentId}`);
+            socket.emit("leaveDocumentRoom", documentId);
         };
-    };
+    
+        // Add the event listener for page unload
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        
+        // Clean up the event listener when component unmounts
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [documentId]);
+
+    const leaveDocument = () => {
+        socket.emit("leaveDocumentRoom", documentId);
+    }
 
     const toggleCollaboratorSearch = () => {
         setShowManageCollaborators(prev => !prev);
@@ -129,7 +182,7 @@ export default function DocumentPage() {
         };
     }, []);
 
-    // Show loading or error state
+    // show loading state
     if (documentLoading) {
         return (
             <div className="document-page">
@@ -140,6 +193,7 @@ export default function DocumentPage() {
         );
     }
 
+    // on document error, display the error and a return to home
     if (error) {
         return (
             <div className="document-page">
@@ -157,7 +211,7 @@ export default function DocumentPage() {
             <div className="document-header">
 
                 <div className="brand-container">
-                    <Link to="/" className="brand-link">
+                    <Link to="/" className="brand-link" onClick={leaveDocument}>
                         <span className="brand-text">CoLab</span>
                     </Link>
                 </div>
@@ -172,28 +226,28 @@ export default function DocumentPage() {
                         <div className="document-export-container">
                             <Export quillRef={quillRef} titleRef={titleRef}/>
                         </div>
-                        <div className="document-version-container">
-                            <VersionHistory documentId={documentId} quillRef={quillRef} />
-                        </div>
                     </div>
                 </div>
                 
                 <div className="header-right">
                     <div className="user-list-container">
-                        <UserList users={activeUsers} />
+                        <UserList users={activeUsers.filter(user => user.username !== username)} />
                     </div>
                     
-                    <button 
-                        className="manage-collaborators-btn"
-                        onClick={toggleCollaboratorSearch}
-                    >
-                        Share
-                    </button>
+                    {isDocumentOwner && (
+                        <button 
+                            className="manage-collaborators-btn"
+                            onClick={toggleCollaboratorSearch}
+                        >
+                            Manage Users
+                        </button>
+                    )}
+                    
                 </div>
                 
                 <div className="user-icon-container">
                     <div className="user-icon" style={{ backgroundColor: colour }}>
-                        {username.charAt(0).toUpperCase()}
+                    <FontAwesomeIcon icon={faUser} />
                     </div>
                 </div>
                 

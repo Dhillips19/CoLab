@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import "../../styles/ListUserDocuments.css";
 
+// component to list user's documents
 const ListUserDocuments = () => {
     const [ownedDocuments, setOwnedDocuments] = useState([]);
     const [sharedDocuments, setSharedDocuments] = useState([]);
@@ -14,8 +15,12 @@ const ListUserDocuments = () => {
     
     const navigate = useNavigate();
 
+    // function to retrieve documents from db
     const fetchDocuments = async () => {
-        setLoading(true);
+        
+        setLoading(true); // show loading
+        
+        // call document list API
         try {
             const response = await fetch("http://localhost:3001/api/documents/list", {
                 method: "GET",
@@ -29,23 +34,35 @@ const ListUserDocuments = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
+            // parse and store document arrays
             const data = await response.json();
-            setOwnedDocuments(data.ownedDocuments || []);
-            setSharedDocuments(data.sharedDocuments || []);
-            setError("");
+
+            // sort arrays by last updated date (most recent first)
+            const sortedOwned = data.ownedDocuments.sort((a, b) => 
+                new Date(b.updatedAt) - new Date(a.updatedAt)
+            )
+            const sortedShared = data.sharedDocuments.sort((a, b) => 
+                new Date(b.updatedAt) - new Date(a.updatedAt)
+            );
+
+            // set state of document arrays
+            setOwnedDocuments(sortedOwned || []);
+            setSharedDocuments(sortedShared || []);
+
         } catch (error) {
             setError(`Failed to fetch documents: ${error.message}`);
             console.error("Error:", error);
         } finally {
-            setLoading(false);
+            setLoading(false); // remove loading
         }
     };
 
+    // call fetchDocuments on component mount
     useEffect(() => {
         fetchDocuments();
     }, []);
 
-    // Clear action status after 3 seconds
+    // clear action status message after 3 seconds
     useEffect(() => {
         if (actionStatus.message) {
             const timer = setTimeout(() => {
@@ -56,29 +73,30 @@ const ListUserDocuments = () => {
         }
     }, [actionStatus]);
 
-    // Get current documents based on selection
+    // determine which documents to display based on user selection
     const currentDocuments = listSelection === "ownedDocuments" 
         ? ownedDocuments 
         : sharedDocuments;
 
-    // Function to handle tab switching
+    // function to handle to switching between owned and shared documents
     const handleTabChange = (tab) => {
         setListSelection(tab);
     };
 
-    // Function to delete a document - UPDATED to use POST endpoint
+    // function to handle deletion of document
     const handleDeleteDocument = async (e, documentId) => {
-        e.preventDefault(); // Prevent navigation
-        e.stopPropagation(); // Stop event bubbling
+
+        e.preventDefault(); // prevents navigation from to document
+        e.stopPropagation(); // stops event from bubbling up to parent elements
         
-        // Confirm deletion
+        // prompt user to confirm deletion of document
         const confirmDelete = window.confirm("Are you sure you want to delete this document? This action cannot be undone.");
         if (!confirmDelete) return;
         
+        // call delete document API 
         try {
-            // Changed from DELETE to POST to match the route in documentRoutes.js
             const response = await fetch(`http://localhost:3001/api/documents/delete/${documentId}`, {
-                method: "POST",  // This matches your route definition
+                method: "POST",
                 headers: {
                     "Authorization": `Bearer ${localStorage.getItem("token")}`,
                     "Content-Type": "application/json"
@@ -86,28 +104,30 @@ const ListUserDocuments = () => {
             });
             
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Failed to delete document");
+                throw new Error(response.error || "Failed to delete document");
             }
             
-            // Update the document list
+            // update the document list after deletion and update action status to be displayed
             setOwnedDocuments(ownedDocuments.filter(doc => doc.documentId !== documentId));
             setActionStatus({ type: "success", message: "Document deleted successfully" });
+
         } catch (error) {
             console.error("Error deleting document:", error);
             setActionStatus({ type: "error", message: error.message });
         }
     };
 
-    // Function to leave a shared document
+    // function to leave shared document
     const handleLeaveDocument = async (e, documentId) => {
-        e.preventDefault(); // Prevent navigation
-        e.stopPropagation(); // Stop event bubbling
+
+        e.preventDefault(); // prevents navigation from to document
+        e.stopPropagation(); // stops event from bubbling up to parent elements
         
-        // Confirm leaving
+        // prompt user to confirm leaving of document
         const confirmLeave = window.confirm("Are you sure you want to leave this document? You'll need to be re-invited to access it again.");
         if (!confirmLeave) return;
         
+        // call leave document API
         try {
             const response = await fetch(`http://localhost:3001/api/documents/${documentId}/leave`, {
                 method: "POST",
@@ -118,27 +138,31 @@ const ListUserDocuments = () => {
             });
             
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Failed to leave document");
+                throw new Error(response.error || "Failed to leave document");
             }
             
-            // Update the document list
+            // update the document list after leaving and update action status to be displayed
             setSharedDocuments(sharedDocuments.filter(doc => doc.documentId !== documentId));
             setActionStatus({ type: "success", message: "You've left the document" });
+
         } catch (error) {
             console.error("Error leaving document:", error);
             setActionStatus({ type: "error", message: error.message });
         }
     };
 
+    // handle clicking on document from the list
     const handleDocumentClick = (documentId) => {
+        // navigate to document page
         navigate(`/document/${documentId}`);
     };
 
+    // display user document lists
     return (
         <div className='documents-container'>
-            {/* Tab Navigation */}
+            {/* document list tabs */}
             <div className="document-tabs">
+                {/* change document list based on selection */}
                 <button 
                     className={`tab-button ${listSelection === "ownedDocuments" ? "active" : ""}`}
                     onClick={() => handleTabChange("ownedDocuments")}
@@ -153,20 +177,21 @@ const ListUserDocuments = () => {
                 </button>
             </div>
 
-            {/* Status Messages */}
+            {/* display action messages on success/failure */}
             {actionStatus.message && (
                 <div className={`action-status ${actionStatus.type}`}>
                     {actionStatus.message}
                 </div>
             )}
 
-            {/* Loading & Error Handling */}
+            {/* loading and error handling */}
             {loading && <p className="loading-message">Loading documents...</p>}
             {error && <p className="error-message">{error}</p>}
 
-            {/* Display Documents */}
+            {/* display document lists */}
             {!loading && !error && (
                 <>
+                    {/* display empty message based on tab selection */ }
                     {currentDocuments.length === 0 ? (
                         <p className="empty-state">
                             {listSelection === "ownedDocuments" 
@@ -175,6 +200,7 @@ const ListUserDocuments = () => {
                             }
                         </p>
                     ) : (
+                        /* display document list by mapping based _id key */
                         <div className='documents-list'>
                             {currentDocuments.map((doc) => (
                                 <div key={doc._id} className='document-item-wrapper'>
@@ -193,7 +219,7 @@ const ListUserDocuments = () => {
                                             })}
                                         </p>
                                         
-                                        {/* Delete/Leave button */}
+                                        { /* display delete/leave document button in document-item based on tab selection */}
                                         {listSelection === "ownedDocuments" ? (
                                             <button 
                                                 className="document-delete-btn"
@@ -222,4 +248,5 @@ const ListUserDocuments = () => {
     );
 };
 
+// export component for use
 export default ListUserDocuments;

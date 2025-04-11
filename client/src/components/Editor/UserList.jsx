@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import "../../styles/UserList.css";
 
 const UserList = ({ users = [] }) => {
-    const [showAllUsers, setShowAllUsers] = useState(false);
     
     // Max visible avatars before showing +N
     const MAX_VISIBLE = 5;

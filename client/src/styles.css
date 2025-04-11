@@ -1,10 +1,4 @@
-:root {
-    --nav-bar-height: 3rem;
-    --document-header-height: 4rem; /* Match your actual height */
-    --toolbar-height: 2.5rem; /* Add this for Quill toolbar */
-    --total-fixed-height: calc(var(--nav-bar-height) + var(--document-header-height) + var(--toolbar-height));
-}
-
+/* This file contains the global styles for the application. */
 *, *::before, *::after {
     box-sizing: border-box;
 }

@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import socket from '../../socket/socket';
 import '../../styles/DocumentTitle.css';
 
+// function for the document title component
 const DocumentTitle = ({ documentId, titleRef }) => {
-    const [title, setTitle] = useState('Untitled Document');
+    const [title, setTitle] = useState('Untitled Document'); 
     const [isEditing, setIsEditing] = useState(false);
     const [previousTitle, setPreviousTitle] = useState('Untitled Document');
     const inputRef = useRef(null);
@@ -15,6 +16,7 @@ const DocumentTitle = ({ documentId, titleRef }) => {
         }
     }, [titleRef]);
 
+    // load the title when the component mounts
     useEffect(() => {
         if (!socket) return;
 
@@ -23,7 +25,7 @@ const DocumentTitle = ({ documentId, titleRef }) => {
             setTitle(newTitle);
             setPreviousTitle(newTitle);
             if (titleRef) {
-                titleRef.current = newTitle; // Update the titleRef with the new title
+                titleRef.current = newTitle; 
             }
         });
 
@@ -32,7 +34,6 @@ const DocumentTitle = ({ documentId, titleRef }) => {
         };
     }, [titleRef]);
 
-    // Start editing - save previous title in case we need to revert
     const startEditing = () => {
         setPreviousTitle(title);
         setIsEditing(true);
@@ -57,18 +58,15 @@ const DocumentTitle = ({ documentId, titleRef }) => {
         }
     };
 
-    // Common function to handle validation and submission
     const finishEditing = () => {
         const trimmedTitle = title.trim();
         
-        // If empty, revert to previous title
         if (trimmedTitle === '') {
             setTitle(previousTitle);
             setIsEditing(false);
             return;
         }
         
-        // Only emit if title has changed
         if (trimmedTitle !== previousTitle) {
             socket.emit('updateTitle', { documentId, title: trimmedTitle });
             if (titleRef) {
@@ -76,7 +74,7 @@ const DocumentTitle = ({ documentId, titleRef }) => {
             }
         }
         
-        setTitle(trimmedTitle); // Ensure we use the trimmed version
+        setTitle(trimmedTitle);
         setIsEditing(false);
     };
 

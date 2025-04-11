@@ -7,7 +7,7 @@ import { loadChatMessages, saveChatMessage } from "./controllers/chatController.
 const roomData = {};
 const roomUsers = {}
 
-export default function initializeSocket(server) {
+export default function initialiseSocket(server) {
     const io = new Server(server, {
         cors: {
             origin: "http://localhost:3000",
@@ -106,24 +106,6 @@ export default function initializeSocket(server) {
             }    
         });
 
-        socket.on('requestLatestState', async (documentId) => {
-            try {
-                if (!documentId) return;
-                
-                console.log(`Client requested latest state for document ${documentId}`);
-                
-                const { ydoc } = await loadDocument(documentId);
-
-                if (ydoc) {
-                    roomData[documentId].ydoc = ydoc; // Update in-memory document if it exists
-                    const update = Y.encodeStateAsUpdate(ydoc);
-                    socket.emit('latestState', update);
-                }
-            } catch (error) {
-                console.error(`Error sending latest state for ${documentId}:`, error);
-            }
-        });
-
         socket.on('awareness-update', ({ documentId, update }) => {
             socket.to(documentId).emit('awareness-update', { update });
           });
@@ -156,6 +138,47 @@ export default function initializeSocket(server) {
                 io.to(documentId).emit("receiveMessage", chatMessage);
             } catch (error) {
                 console.error(`Failed to save chat message:`, error);
+            }
+        });
+
+        // Add this event handler to your socket.on('connection') block
+        socket.on('leaveDocumentRoom', (documentId) => {
+            console.log(`User ${socket.id} explicitly leaving document room: ${documentId}`);
+            
+            socket.leave(documentId);
+
+            // Remove user from room users list
+            if (roomUsers[documentId]) {
+                delete roomUsers[documentId][socket.id];
+
+                console.log(`printing room users ${roomUsers}`);
+                
+                // Broadcast updated user list to remaining users
+                io.to(documentId).emit("updateUsers", Object.values(roomUsers[documentId]));
+                
+                console.log(`Users in room ${documentId}:`, roomUsers[documentId]);
+                console.log(`Users remaining in room ${documentId}:`, Object.keys(roomUsers[documentId]).length);
+                
+                // Check if room is empty
+                if (Object.keys(roomUsers[documentId]).length === 0) {
+                    console.log(`Last user left room ${documentId}, cleaning up`);
+                    
+                    if (roomData[documentId]) {
+                        // Clear timer if exists
+                        if (roomData[documentId].timer) {
+                            clearInterval(roomData[documentId].timer);
+                            roomData[documentId].timer = null;
+                        }
+                        
+                        // Save document
+                        saveDocument(documentId, roomData[documentId].ydoc)
+                            .then(() => {
+                                console.log(`Document ${documentId} saved during explicit leave`);
+                                delete roomData[documentId];
+                            })
+                            .catch(err => console.error(`Error saving document ${documentId} during leave:`, err));
+                    }
+                }
             }
         });
 

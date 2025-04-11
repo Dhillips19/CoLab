@@ -1,7 +1,7 @@
 import User from '../DB/models/userModel.js';
 import jwt from 'jsonwebtoken';
 
-// Update user colour preference
+// function to update user's colour
 export const updateUserColour = async (req, res) => {
     try {
         const { colour } = req.body;
@@ -11,15 +11,17 @@ export const updateUserColour = async (req, res) => {
             return res.status(400).json({ message: "Colour is required" });
         }
         
+        // finc user in DB
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
         
-        // Update colour in database
+        // update user's colour
         user.colour = colour;
         await user.save();
 
+        // sign the stored jwt token with the updated colour
         const token = jwt.sign(
             {
                 id: user._id,

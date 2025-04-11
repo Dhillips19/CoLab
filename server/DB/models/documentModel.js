@@ -22,12 +22,6 @@ const DocumentSchema = new mongoose.Schema({
     collaborators: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
     }],
-    versions: [{
-        versionNum: { type: Number, required: true },
-        snapshot: { type: Buffer, required: true },
-        name: { type: String, required: true },
-        timestamp: { type: Date, default: Date.now }
-    }],
     createdAt: {
         type: Date,
         default: Date.now,
@@ -37,7 +31,7 @@ const DocumentSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
-}, { timestamps: true }); // This automatically manages updatedAt and createdAt
+}, { timestamps: true }); 
 
 const Document = mongoose.model('Document', DocumentSchema);
 
