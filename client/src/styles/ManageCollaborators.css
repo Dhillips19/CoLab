@@ -4,7 +4,7 @@
     width: 100%;
 }
 
-/* Tab Navigation */
+/* tabs */
 .collaborator-tabs {
     display: flex;
     border-bottom: 1px solid #e1e4e8;
@@ -34,7 +34,7 @@
     border-bottom: 2px solid #3498db;
 }
 
-/* Search Form */
+/* search */
 .search-form {
     display: flex;
     gap: 8px;
@@ -69,7 +69,7 @@
     color: #8195a6;
 }
 
-/* User Lists */
+/* user lists */
 .collaborator-panel {
     flex: 1;
     overflow-y: auto;
@@ -121,7 +121,7 @@
     color: #6a737d;
 }
 
-/* Buttons */
+/* buttons for add and remove */
 .action-button {
     background-color: #3498db;
     color: white;
@@ -151,7 +151,7 @@
     background-color: #c0392b;
 }
 
-/* Status Messages */
+/* status messages */
 .error-message, .success-message {
     padding: 10px 16px;
     margin: 8px 16px;

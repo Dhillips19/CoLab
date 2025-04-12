@@ -1,4 +1,4 @@
-/* Chat Container */
+/* chat container */
 .chat-container {
     position: fixed;
     bottom: 20px;
@@ -7,7 +7,7 @@
     z-index: 100;
 }
 
-/* Chat Toggle Button */
+/* chat toggle button */
 .chat-toggle {
     position: fixed;
     bottom: 20px;
@@ -32,7 +32,7 @@
     background: #2980b9;
 }
 
-/* Chat Panel */
+/* chat panel */
 .chat-panel {
     background: white;
     border-radius: 10px;
@@ -68,7 +68,7 @@
     align-items: center;
 }
 
-/* Chat Messages */
+/* chat messages */
 .chat-messages {
     flex: 1;
     overflow-y: auto;
@@ -79,16 +79,16 @@
     background: #f9f9f9;
 }
 
-/* Individual Messages */
+/* individual messages */
 .chat-message {
     padding: 10px 15px;
     border-radius: 18px;
     max-width: 75%;
     position: relative;
     line-height: 1.4;
-    word-wrap: break-word; /* Add this to wrap long words */
-    overflow-wrap: break-word; /* Modern browsers */
-    white-space: pre-wrap; /* Preserve line breaks but wrap text */
+    word-wrap: break-word; 
+    overflow-wrap: break-word; 
+    white-space: pre-wrap; 
 }
 
 .chat-message strong {
@@ -125,7 +125,7 @@
     border-bottom-right-radius: 4px;
 }
 
-/* Chat Input Box */
+/* chat input */
 .chat-input {
     padding: 12px;
     background: white;

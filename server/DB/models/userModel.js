@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
 
+// user model to store the user information
+// each user has a unique username, email, password, colour, 
+// an ownedDocuments array, and a sharedDocuments array
 const userModel = new mongoose.Schema({
     username: {
         type: String,

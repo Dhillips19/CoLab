@@ -6,7 +6,9 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+// function for the login component
 const Login = () => {
+    // state variables for form data, error messages, success messages, and loading state
     const [formData, setFormData] = useState({ 
         email: '', 
         password: '' 
@@ -14,20 +16,26 @@ const Login = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    // useAuth hook to access authentication context
     const { login } = useAuth();
 
+    // function to handle input changes
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // function to handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); // prevent default form submission
+        // set error and loading state
         setError('');
         setIsLoading(true);
 
+        // send form data to the server for authentication
         try {
             const res = await axios.post('http://localhost:3001/api/auth/login', formData);
-            login(res.data.token);
+            login(res.data.token); // call login function from useAuth to set the token in local storage
             setSuccess("Login successful! Redirecting...");
         } catch (err) {
             console.error("Login error:", err);
@@ -37,6 +45,7 @@ const Login = () => {
         }
     };
 
+    // render the login form
     return (
         <div className='wrapper'>
             <div className='container'>
@@ -45,6 +54,7 @@ const Login = () => {
                     <div className="underline"></div>
                 </div>
 
+                {/* display error or success messages */}
                 {error && <div className="error">{error}</div>}
                 {success && <div className="success">{success}</div>}
 
@@ -87,10 +97,11 @@ const Login = () => {
                     </div>
                 </form>
 
-                <div className="forgot-password">
+                {/* display forgot password and create account links */}
+                {/* <div className="forgot-password">
                     Forgot your password?
                     <span>Reset it here</span>
-                </div>
+                </div> */}
 
                 <div className="account-link">
                     Don't have an account?

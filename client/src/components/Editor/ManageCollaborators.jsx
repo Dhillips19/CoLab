@@ -4,29 +4,32 @@ import { faUserPlus, faUserMinus, faSearch, faTimes } from '@fortawesome/free-so
 import '../../styles/ManageCollaborators.css';
 
 const ManageCollaborators = ({ documentId }) => {
-    // State for search/add functionality
+    // state for search term and results
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     
-    // State for current collaborators (remove functionality)
+    // state for collaborators
     const [collaborators, setCollaborators] = useState([]);
     
-    // UI state management
+    // state for active tab, error, success, and loading
     const [activeTab, setActiveTab] = useState('add');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Fetch current collaborators when component mounts or document changes
+    // fetch collaborators when the component mounts or when the active tab is remove
     useEffect(() => {
         if (documentId && activeTab === 'remove') {
             fetchCollaborators();
         }
     }, [documentId, activeTab]);
 
-    // Function to fetch current collaborators
+    // function to fetch current collaborators from the server 
     const fetchCollaborators = async () => {
+        
         setLoading(true);
+        
+        // call the API to get the list of collaborators
         try {
             const response = await fetch(`http://localhost:3001/api/editor/${documentId}/collaborators`, {
                 headers: {
@@ -38,6 +41,7 @@ const ManageCollaborators = ({ documentId }) => {
                 throw new Error('Failed to fetch collaborators');
             }
 
+            // set the collaborators state with the response data
             const data = await response.json();
             setCollaborators(data);
         } catch (error) {
@@ -48,18 +52,22 @@ const ManageCollaborators = ({ documentId }) => {
         }
     };
 
-    // Handle search for adding collaborators
+    // handle the searching for users to be added to the document
     const handleSearch = async (e) => {
-        e.preventDefault();
+        
+        e.preventDefault(); // prevent form submission on page reload
+        // reset error and success messages
         setError('');
         setSuccess('');
         
         try {
+            // check if search term is empty when search submitted
             if (!searchTerm.trim()) {
                 setError('Please enter a search term');
                 return;
             }
 
+            // call the API to search for users
             setLoading(true);
             const response = await fetch(`http://localhost:3001/api/editor/search?term=${encodeURIComponent(searchTerm)}&documentId=${documentId}`, {
                 headers: {
@@ -67,8 +75,15 @@ const ManageCollaborators = ({ documentId }) => {
                 }
             });
 
+            // check if the response is ok
+            if (!response.ok) {
+                throw new Error('Failed to search users');
+            }
+
+            // parse the response data
             const data = await response.json();
             
+            // set search results and handle empty results
             if (response.ok) {
                 setSearchResults(data);
                 if (data.length === 0) {
@@ -85,11 +100,13 @@ const ManageCollaborators = ({ documentId }) => {
         }
     };
 
-    // Add collaborator to document
+    // fucntion to add a collaborator to the document
     const addCollaborator = async (userId) => {
+        // reset error and success messages
         setError('');
         setSuccess('');
         
+        // call the API to add a collaborator
         try {
             setLoading(true);
             const response = await fetch(`http://localhost:3001/api/editor/${documentId}/collaborators`, {
@@ -101,12 +118,19 @@ const ManageCollaborators = ({ documentId }) => {
                 body: JSON.stringify({ userId })
             });
             
+            // check if the response is ok
+            if (!response.ok) {
+                throw new Error('Failed to add collaborator');
+            }
+
+            // parse the response data
             const data = await response.json();
             
+            // set success message and update search results
             if (response.ok) {
                 setSuccess('Collaborator added successfully');
                 setSearchResults(results => results.filter(user => user._id !== userId));
-                setTimeout(() => setSuccess(''), 3000);
+                setTimeout(() => setSuccess(''), 2000); // clear success message after 2 seconds
             } else {
                 setError(data.message || 'Failed to add collaborator');
             }
@@ -118,11 +142,13 @@ const ManageCollaborators = ({ documentId }) => {
         }
     };
 
-    // Remove collaborator from document
+    // function to remove a collaborator from the document
     const removeCollaborator = async (userId) => {
+        // reset error and success messages
         setError('');
         setSuccess('');
         
+        // call the API to remove a collaborator
         try {
             setLoading(true);
             const response = await fetch(`http://localhost:3001/api/editor/${documentId}/collaborators/${userId}`, {
@@ -132,11 +158,16 @@ const ManageCollaborators = ({ documentId }) => {
                 }
             });
             
+            // check if the response is ok
+            if (!response.ok) {
+                throw new Error('Failed to remove collaborator');
+            }
+
+            // update the collaborators state to remove the selected user and set success message 
             if (response.ok) {
                 setSuccess('Collaborator removed successfully');
-                // Update the collaborators list
                 setCollaborators(collaborators.filter(user => user._id !== userId));
-                setTimeout(() => setSuccess(''), 3000);
+                setTimeout(() => setSuccess(''), 2000); // clear success message after 2 seconds
             } else {
                 const data = await response.json();
                 setError(data.message || 'Failed to remove collaborator');
@@ -151,32 +182,33 @@ const ManageCollaborators = ({ documentId }) => {
 
     return (
         <div className="manage-collaborators">
-            {/* Tab Navigation */}
             <div className="collaborator-tabs">
+                { /* add and remove collaborators tabs */}
                 <button 
                     className={`tab-button ${activeTab === 'add' ? 'active' : ''}`} 
-                    onClick={() => setActiveTab('add')}
+                    onClick={() => setActiveTab('add')} // set active tab to add
                 >
-                    <FontAwesomeIcon icon={faUserPlus} /> Add Collaborators
+                    <FontAwesomeIcon icon={faUserPlus} /> Add Users
                 </button>
                 <button 
                     className={`tab-button ${activeTab === 'remove' ? 'active' : ''}`} 
                     onClick={() => {
-                        setActiveTab('remove');
-                        fetchCollaborators();
+                        setActiveTab('remove'); // set active tab to remove
+                        fetchCollaborators(); // fetch collaborators when tab is clicked
                     }}
                 >
-                    <FontAwesomeIcon icon={faUserMinus} /> Remove Collaborators
+                    <FontAwesomeIcon icon={faUserMinus} /> Remove Users
                 </button>
             </div>
 
-            {/* Status Messages */}
+            {/* status messages to be displayed on user actions */}
             {error && <div className="error-message">{error}</div>}
             {success && <div className="success-message">{success}</div>}
 
-            {/* Add Collaborators Panel */}
+            { /* add collaborators panel */}
             {activeTab === 'add' && (
                 <div className="collaborator-panel">
+                    { /* search form to find users to add as collaborators */}
                     <form onSubmit={handleSearch} className="search-form">
                         <div className="search-input-container">
                             <input
@@ -194,14 +226,18 @@ const ManageCollaborators = ({ documentId }) => {
                         </button>
                     </form>
 
+                    {/* list of search results to add as collaborators */}
                     <div className="results-list">
                         {searchResults.length > 0 ? (
+                            // map through search results and display them
                             searchResults.map(user => (
                                 <div key={user._id} className="user-item">
                                     <div className="user-info">
+                                        { /* display user information */}
                                         <span className="username">{user.username}</span>
                                         <span className="email">{user.email}</span>
                                     </div>
+                                    { /* button to add user as collaborator */}
                                     <button 
                                         onClick={() => addCollaborator(user._id)}
                                         className="action-button"
@@ -220,23 +256,27 @@ const ManageCollaborators = ({ documentId }) => {
                 </div>
             )}
 
-            {/* Remove Collaborators Panel */}
+            {/* remove collaborators panel */}
             {activeTab === 'remove' && (
                 <div className="collaborator-panel">
                     <div className="panel-header">
                         <h4>Current Collaborators</h4>
                     </div>
                     
+                    {/* list of current collaborators to remove */}
                     <div className="results-list">
                         {loading ? (
                             <div className="loading-message">Loading collaborators...</div>
                         ) : collaborators.length > 0 ? (
+                            // map through collaborators and display them
                             collaborators.map(user => (
                                 <div key={user._id} className="user-item">
                                     <div className="user-info">
+                                        { /* display user information */}
                                         <span className="username">{user.username}</span>
                                         <span className="email">{user.email}</span>
                                     </div>
+                                    { /* button to remove user as collaborator */}
                                     <button 
                                         onClick={() => removeCollaborator(user._id)}
                                         className="action-button remove"
@@ -256,4 +296,5 @@ const ManageCollaborators = ({ documentId }) => {
     );
 };
 
+// export component for use
 export default ManageCollaborators;

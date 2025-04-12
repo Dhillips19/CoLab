@@ -1,7 +1,7 @@
 import Document from "../DB/models/documentModel.js";
 
 // function to verify the documentId in the url exists in the DB
-// also checks that the curren user has access to it
+// also checks that the current user has access to it
 export async function verifyDocumentAccessible(req, res, next) {
     const { documentId } = req.params;
     

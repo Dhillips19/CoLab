@@ -1,3 +1,4 @@
+/* export button styles */
 .export-dropdown-container {
     position: relative;
     display: inline-block;
@@ -25,6 +26,7 @@
     cursor: not-allowed;
 }
 
+/* dropdown menu */
 .export-dropdown-menu {
     position: absolute;
     top: 100%;
@@ -44,6 +46,7 @@
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* export options */
 .export-option {
     display: block;
     width: 100%;

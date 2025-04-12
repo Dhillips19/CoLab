@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+// document model to store the document information
+// each document has a unique documentId, a state (Buffer), 
+// a title, an owner, an array of collaborators, 
+// and timestamps for creation and updates
 const DocumentSchema = new mongoose.Schema({
     documentId: { 
         type: String, 

@@ -80,7 +80,7 @@ describe('ManageCollaborators Component', () => {
     render(<ManageCollaborators documentId={mockDocumentId} />);
     
     // Check tab is active
-    expect(screen.getByRole('button', { name: /add collaborators/i })).toHaveClass('active');
+    expect(screen.getByRole('button', { name: /add users/i })).toHaveClass('active');
     
     // Check search form is displayed
     expect(screen.getByPlaceholderText(/search users/i)).toBeInTheDocument();
@@ -201,7 +201,7 @@ describe('ManageCollaborators Component', () => {
     });
     
     // Click the remove collaborators tab
-    await user.click(screen.getByRole('button', { name: /remove collaborators/i }));
+    await user.click(screen.getByRole('button', { name: /remove users/i }));
     
     // Verify collaborators are displayed
     await waitFor(() => {
@@ -253,7 +253,7 @@ describe('ManageCollaborators Component', () => {
     render(<ManageCollaborators documentId={mockDocumentId} />);
     
     // Switch to remove collaborators tab
-    await user.click(screen.getByRole('button', { name: /remove collaborators/i }));
+    await user.click(screen.getByRole('button', { name: /remove users/i }));
     
     // Wait for collaborators to load
     await waitFor(() => {

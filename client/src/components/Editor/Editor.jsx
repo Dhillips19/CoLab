@@ -11,16 +11,22 @@ import "../../styles/Editor.css";
 
 Quill.register('modules/cursors', QuillCursors)
 
+// Editor component to create a collaborative text editor using Quill and Yjs
+// uses socket io to communicate with the server and share document updates
 const Editor = ({ documentId, username, colour, quillRef }) => {
+    
+    // useRef to store the editor instance and wrapper reference
     const wrapperRef = useRef(null);
 
     useEffect(() => {
+        // check if the socket is connected and the wrapperRef is available
         if (!socket || !wrapperRef.current) return;
 
-        wrapperRef.current.innerHTML = "";
-        const editor = document.createElement("div");
-        wrapperRef.current.append(editor);
+        wrapperRef.current.innerHTML = "";  // clear the wrapper before creating a new editor instance
+        const editor = document.createElement("div"); // create div to store the quill editor
+        wrapperRef.current.append(editor); // append the editor to wrapper
 
+        // register custom icons for undo and redo buttons
         var icons = Quill.import("ui/icons");
             icons["undo"] = `<svg viewbox="0 0 18 18">
                 <polygon class="ql-fill ql-stroke" points="6 10 4 12 2 10 6 10"></polygon>
@@ -31,46 +37,29 @@ const Editor = ({ documentId, username, colour, quillRef }) => {
                 <path class="ql-stroke" d="M9.91,13.91A4.6,4.6,0,0,1,9,14a5,5,0,1,1,5-5"></path>
             </svg>`;
 
-        // Create quill editor instance with history module
+        // create a new Quill editor instance
         const quill = new Quill(editor, {
             theme: "snow",
             modules: {
-                cursors: true,
+                cursors: true, // enable cursors module for collaborative editing
                 toolbar: {
                     container: [
-                        // Text formatting
-                        ['bold', 'italic', 'underline', 'strike'],
-                        
-                        // Text alignment
-                        [{ 'align': [] }],
-                        
-                        // Lists and indentation
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'indent': '-1'}, { 'indent': '+1' }],
-                        
-                        // Headers (H1, H2, etc)
-                        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-                        
-                        // Font styling
-                        [{ 'font': [] }],
-                        [{ 'size': ['small', false, 'large', 'huge'] }],
-                        
-                        // Text color and background
-                        [{ 'color': [] }, { 'background': [] }],
-                        
-                        // Other formatting
-                        ['blockquote', 'code-block'],
-                        
-                        // Special characters and media
-                        ['link', 'image', 'formula'],
 
-                        ['undo', 'redo'], // Undo and redo buttons
-                        
-                        // Clear formatting
-                        ['clean']
+                        [{ 'font': [] }], // font options
+                        [{ 'size': ['small', 'normal', 'large', 'huge'] }], // size options
+                        [{ 'header': 1 }, { 'header': 2 }], // header options
+                        ['bold', 'italic', 'underline', 'strike'], // text formatting options
+                        [{ 'align': [] }], // alignment options
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }], // list options
+                        [{ 'indent': '-1'}, { 'indent': '+1' }], // indent options
+                        [{ 'color': [] }, { 'background': [] }], // color options
+                        ['blockquote', 'code-block'], // blockquote and code options
+                        ['link', 'image', 'formula'], // // link, image and formula options
+                        ['undo', 'redo'], // custom undo and redo options
+                        ['clean'] // clear formatting option
                     ],
                     handlers: {
-                        // Add handlers for undo and redo
+                        // add handlers for undo and redo
                         'undo': function() {
                             console.log("Undo button clicked");
                             quill.history.undo();
@@ -82,14 +71,12 @@ const Editor = ({ documentId, username, colour, quillRef }) => {
                     }
                 },
                 history: {
-                    userOnly: true
+                    userOnly: true // only the user can see and use their own quill history
                 }
             }
         });
 
         quillRef.current = quill; // store quill instance in ref
-        
-        let binding = null;
 
         const ydoc = new Y.Doc(); // create y.js document 
         const awareness = new Awareness(ydoc); // create awareness instance for user presence
@@ -108,23 +95,6 @@ const Editor = ({ documentId, username, colour, quillRef }) => {
             Y.applyUpdate(ydoc, new Uint8Array(update));
         }); 
 
-        // Add this to the existing socket event listeners in Editor.jsx
-        socket.on('latestState', (update) => {
-            console.log('Received latest state after version restore');
-            
-            const existing = ydoc.getText('quill');
-            if (existing) existing.delete(0, existing.length);
-
-            // Apply the update to the ydoc
-            Y.applyUpdate(ydoc, new Uint8Array(update));
-
-            const restoredText = ydoc.getText('quill');
-            if (binding) {
-                binding.destroy(); // prevent duplicate bindings
-            }
-            binding = new QuillBinding(restoredText, quill, awareness);
-        });
-
         // listen for updates from server and apply the update to local ydoc
         socket.on('update', (update) => {  
             Y.applyUpdate(ydoc, new Uint8Array(update));
@@ -135,6 +105,7 @@ const Editor = ({ documentId, username, colour, quillRef }) => {
             socket.emit('update', update);
         });
 
+        // send awareness updates to the server when the local awareness instance is updated
         awareness.on('update', ({ added, updated, removed }) => {
             const update = awarenessProtocol.encodeAwarenessUpdate(
                 awareness,
@@ -143,6 +114,7 @@ const Editor = ({ documentId, username, colour, quillRef }) => {
             socket.emit('awareness-update', { documentId, update });
         });
         
+        // listen for awareness updates from the server and apply them to local awareness instance
         socket.on('awareness-update', ({ update }) => {
             awarenessProtocol.applyAwarenessUpdate(awareness, new Uint8Array(update));
         });
@@ -154,7 +126,7 @@ const Editor = ({ documentId, username, colour, quillRef }) => {
             socket.off('latestState')
             ydoc.destroy();
         }
-    }, [documentId]);
+    }, [documentId, username, colour, quillRef]);
 
     return <div className="editor-container" ref={wrapperRef}></div>;
 };

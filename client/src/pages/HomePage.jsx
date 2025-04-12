@@ -4,8 +4,7 @@ import CreateDocument from '../components/Documents/CreateDocument';
 import ListUserDocuments from '../components/Documents/ListUserDocuments';
 import '../styles/HomePage.css';
 
-export default function HomePage() {
-
+const HomePage = () => {
     return (
         <div>
             <NavBar/>
@@ -17,3 +16,5 @@ export default function HomePage() {
         </div>
     )
 }
+
+export default HomePage;

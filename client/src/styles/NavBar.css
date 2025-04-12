@@ -1,4 +1,4 @@
-/* Navigation Menu */
+/* navigation menu */
 .navigation-menu {
     display: flex;
     align-items: center;
@@ -11,13 +11,12 @@
     z-index: 100;
 }
 
-/* CoLab Brand Styling*/
+/* CoLab brand */
 .nav-brand {
     display: flex;
     align-items: center;
     margin-right: 1rem; 
 }
-
 
 .brand-text {
     font-size: 1.4rem;
@@ -26,7 +25,6 @@
     letter-spacing: -0.5px;
 }
 
-/* Add this to your NavBar.css */
 .brand-link {
     text-decoration: none;
     display: flex;
@@ -42,40 +40,36 @@
     transform: scale(0.98);
 }
 
-/* Adjust navigation links layout */
+/* nav layout */
 nav {
     display: flex;
     align-items: center;
 }
 
-/* Change these properties to adjust the space between login and register links */
 .nav-links {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
-    gap: 1rem; /* This controls the space between list items */
+    gap: 1rem; 
 }
 
-/* Ensure proper vertical alignment */
 .navigation-menu li {
     display: flex;
     align-items: center;
     height: 100%;
-    margin-right: 0; /* Remove any default margins */
+    margin-right: 0; 
 }
 
-/* For the login/register case specifically */
 .navigation-menu li + li {
-    margin-left: 0; /* Override any browser default spacing */
+    margin-left: 0; 
 }
 
-/* You might also want to adjust the padding inside the links */
 .navigation-menu a {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem; /* Adjust this to change the size of the clickable area */
+    padding: 0.5rem 0.75rem; 
     border-radius: 4px;
     text-decoration: none;
     color: #2c3e50;
@@ -88,7 +82,7 @@ nav {
     color: #3498db;
 }
 
-/* User Controls Section */
+/* user controls */
 .user-controls {
     display: flex;
     align-items: center;
@@ -112,7 +106,7 @@ nav {
     color: #3498db;
 }
 
-/* User Icon */
+/* user icon */
 .user-settings {
     position: relative;
     display: flex;
@@ -131,6 +125,7 @@ nav {
     transition: transform 0.2s ease;
 }
 
+/* user settings */ 
 .settings-cog {
     width: 2rem;
     height: 2rem;
@@ -148,7 +143,7 @@ nav {
     color: #3498db;
 }
 
-/* Settings Dropdown */
+/* settings dropdown */
 .settings-dropdown {
     position: absolute;
     top: calc(100% + 0.75rem);
@@ -167,7 +162,7 @@ nav {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Dropdown Header */
+/* dropdown header */
 .settings-header {
     padding: 1rem;
     border-bottom: 1px solid #edf2f7;
@@ -180,7 +175,7 @@ nav {
     font-weight: 600;
 }
 
-/* Colour Picker */
+/* colour picker */
 .colour-picker {
     padding: 1rem;
 }
@@ -192,11 +187,11 @@ nav {
     font-weight: 500;
 }
 
-/* Update the colour grid to accommodate 15 colours */
+/* display 15 options */
 .colour-options {
     display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 columns instead of 4 */
-    gap: 0.5rem; /* Slightly smaller gap to fit more colours */
+    grid-template-columns: repeat(5, 1fr); 
+    gap: 0.5rem; 
     padding: 0.5rem;
 }
 
@@ -228,7 +223,7 @@ nav {
     border-radius: 50%;
 }
 
-/* Dropdown Footer */
+/* dropdown footer */
 .settings-footer {
     padding: 1rem;
     border-top: 1px solid #edf2f7;
@@ -258,20 +253,21 @@ nav {
     border-color: #e53e3e;
 }
 
-/* Improved left section */
+/* left section */
 .left-section {
     display: flex;
     align-items: center;
-    flex: 0 1 auto; /* Don't grow, shrink if needed */
+    flex: 0 1 auto;
 }
 
 /* Settings menu item */
-.settings-menu {
+.change-password {
     padding: 0.5rem 1rem;
     border-bottom: 1px solid #edf2f7;
 }
 
-.settings-item {
+/* change password link */
+.change-password-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -282,19 +278,19 @@ nav {
     transition: background-color 0.2s;
 }
 
-.settings-item:hover {
+.change-password-link:hover {
     background-color: rgba(52, 152, 219, 0.1);
     color: #3498db;
 }
 
-/* Add this to ensure right positioning */
+/* right section */
 .right-section {
     display: flex;
     align-items: center;
-    margin-left: auto; /* This pushes it to the right */
+    margin-left: auto; 
 }
 
-/* User info with name next to icon */
+/* user info for name */
 .user-info {
     display: flex;
     align-items: center;

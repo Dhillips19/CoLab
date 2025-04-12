@@ -1,12 +1,15 @@
 import React from "react";
 import "../../styles/UserList.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUsers } from "@fortawesome/free-solid-svg-icons";
 
+// function for the user list component
 const UserList = ({ users = [] }) => {
     
-    // Max visible avatars before showing +N
+    // maximum number of users to show 
     const MAX_VISIBLE = 5;
     
-    // Function to get initials from username
+    // fucntion to get the initials of a username
     const getInitials = (username) => {
         if (!username) return "?";
         return username
@@ -17,18 +20,19 @@ const UserList = ({ users = [] }) => {
             .slice(0, 2);
     };
     
-    // If no users, show empty state
+    // no other users in the document, display a message
     if (!users || users.length === 0) {
         return <div className="user-list"><span className="no-users">No active users</span></div>;
     }
     
-    // Calculate how many users to show and how many are hidden
+    // calculate how many users to show and how many are remaining
     const visibleUsers = users.slice(0, MAX_VISIBLE);
     const remainingCount = Math.max(0, users.length - MAX_VISIBLE);
     
     return (
         <div className="user-list">
             <div className="user-icons-container">
+                { /* map through the visible users and display their initials */}
                 {visibleUsers.map((user, index) => (
                     <div 
                         key={index}
@@ -40,26 +44,27 @@ const UserList = ({ users = [] }) => {
                     </div>
                 ))}
                 
-                {remainingCount > 0 && (
-                    <div className="overflow-count">
-                        +{remainingCount}
-                        
-                        <div className="user-tooltip">
-                            <div className="tooltip-header">All Users</div>
-                            {users.map((user, index) => (
-                                <div key={index} className="tooltip-user">
-                                    <div 
-                                        className="tooltip-icon" 
-                                        style={{ backgroundColor: user.colour || "#888" }}
-                                    >
-                                        {getInitials(user.username)}
-                                    </div>
-                                    <span className="tooltip-name">{user.username}</span>
+                { /* if there are more than 5 users, show the count over 5 */}
+                <div className="user-list-display">
+                    {remainingCount > 0 ? `+${remainingCount}` : <FontAwesomeIcon icon={faUsers} />}
+                    
+                    { /* tooltip to show all users when hovered */}
+                    <div className="user-tooltip">
+                        <div className="tooltip-header">All Users</div>
+                        { /* map through the all users and display their initials */}
+                        {users.map((user, index) => (
+                            <div key={index} className="tooltip-user">
+                                <div 
+                                    className="tooltip-icon" 
+                                    style={{ backgroundColor: user.colour || "#888" }}
+                                >
+                                    {getInitials(user.username)}
                                 </div>
-                            ))}
-                        </div>
+                                <span className="tooltip-name">{user.username}</span>
+                            </div>
+                        ))}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

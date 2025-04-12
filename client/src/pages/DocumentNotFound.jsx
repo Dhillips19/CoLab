@@ -4,10 +4,14 @@ import NavBar from '../components/NavBar/NavBar';
 import CreateDocument from '../components/Documents/CreateDocument';
 import '../styles/DocumentNotFound.css';
 
+// DocumentNotFound component to display when a document is not found
 const DocumentNotFound = () => {
+    // useLocation hook to get the current location
     const location = useLocation();
+    // get the document ID from the location state
     const documentId = location.state?.documentId || 'unknown';
 
+    // render not found mesage and buttons to create a new document or return home
     return (
         <div className="not-found-container">
             <NavBar />

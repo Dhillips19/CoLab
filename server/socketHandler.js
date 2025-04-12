@@ -3,7 +3,7 @@ import * as Y from "yjs";
 import { loadDocument, saveDocument, updateDocumentTitle } from "./controllers/documentController.js";
 import { loadChatMessages, saveChatMessage } from "./controllers/chatController.js";
 
-// Store room-specific Y.js documents and timers
+// store room specific document data and users
 const roomData = {};
 const roomUsers = {}
 

@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 
+// chat model to store the chat messages for each document
+// each document has a unique documentId and an array of messages
 const ChatSchema = new mongoose.Schema({
     documentId: {
         type: String,

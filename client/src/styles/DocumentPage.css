@@ -4,7 +4,7 @@
     height: 100vh;
 }
 
-/* Header styling */
+/* header styling */
 .document-header {
     display: flex;
     justify-content: space-between;
@@ -15,6 +15,7 @@
     background-color: white;
 }
 
+/* brand logo */
 .brand-container {
     display: flex;
     align-items: center;
@@ -31,6 +32,7 @@
     color: #3498db;
 }
 
+/* left section */
 .header-left {
     display: flex;
     flex-direction: column;
@@ -48,15 +50,15 @@
     flex-direction: row;
 }
 
+/* right section */
 .header-right {
     display: flex;
     align-items: right;
     flex-wrap: wrap;
     gap: 1rem;
-    max-width: 20rem;
+    max-width: 25rem;
 }
 
-/* User icon in header */
 .user-icon-container {
     display: flex;
     align-items: center;
@@ -75,7 +77,6 @@
     font-size: 1.5rem;
 }
 
-/* Add collaborator button */
 .manage-collaborators-btn {
     background-color: #3498db;
     color: white;
@@ -91,7 +92,6 @@
     background-color: #2980b9;
 }
 
-/* Collaborator search panel */
 .collaborator-management-container {
     position: absolute;
     top: 4.5rem;
@@ -132,7 +132,7 @@
     line-height: 1;
 }
 
-/* Content area */
+/* content below header */
 .content-container {
     flex: 1;
     display: flex;
@@ -145,7 +145,7 @@
     overflow: auto;
 }
 
-/* Loading and error states */
+/* loading and error states */
 .document-loading,
 .document-error {
     display: flex;

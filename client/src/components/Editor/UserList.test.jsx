@@ -2,6 +2,11 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import UserList from './UserList';
 
+// Mock FontAwesomeIcon to make testing easier
+jest.mock('@fortawesome/react-fontawesome', () => ({
+  FontAwesomeIcon: () => <div data-testid="users-icon">Users Icon</div>
+}));
+
 describe('UserList Component', () => {
   // Clear the DOM between tests to avoid conflicts
   afterEach(() => {
@@ -36,11 +41,14 @@ describe('UserList Component', () => {
       { username: 'Jane Smith', colour: '#00ff00' }
     ];
     
-    render(<UserList users={testUsers} />);
+    const { container } = render(<UserList users={testUsers} />);
     
-    // Check for user initials
-    expect(screen.getByText('JD')).toBeInTheDocument();
-    expect(screen.getByText('JS')).toBeInTheDocument();
+    // Use container.querySelector to target only the user-icon elements, not tooltip icons
+    const johnIcon = container.querySelector('.user-icon[title="John Doe"]');
+    const janeIcon = container.querySelector('.user-icon[title="Jane Smith"]');
+    
+    expect(johnIcon).toHaveTextContent('JD');
+    expect(janeIcon).toHaveTextContent('JS');
   });
   
   test('generates correct user initials', () => {
@@ -50,12 +58,16 @@ describe('UserList Component', () => {
       { username: 'Robert John Smith', colour: '#0000ff' }
     ];
     
-    render(<UserList users={testUsers} />);
+    const { container } = render(<UserList users={testUsers} />);
     
-    // Check for correct initials
-    expect(screen.getByText('JD')).toBeInTheDocument();
-    expect(screen.getByText('J')).toBeInTheDocument();
-    expect(screen.getByText('RJ')).toBeInTheDocument();
+    // Use more specific selectors to target only the visible user icons
+    const johnIcon = container.querySelector('.user-icon[title="John Doe"]');
+    const janeIcon = container.querySelector('.user-icon[title="Jane"]');
+    const robertIcon = container.querySelector('.user-icon[title="Robert John Smith"]');
+    
+    expect(johnIcon).toHaveTextContent('JD');
+    expect(janeIcon).toHaveTextContent('J');
+    expect(robertIcon).toHaveTextContent('RJ');
   });
   
   test('shows overflow count when more than MAX_VISIBLE users', () => {
@@ -71,18 +83,33 @@ describe('UserList Component', () => {
     expect(screen.getByText('+2')).toBeInTheDocument();
   });
   
+  test('shows users icon when no overflow', () => {
+    // Create 3 users (less than MAX_VISIBLE of 5)
+    const testUsers = Array.from({ length: 3 }, (_, i) => ({
+      username: `User ${i+1}`,
+      colour: `#${i}${i}${i}`
+    }));
+    
+    render(<UserList users={testUsers} />);
+    
+    // Check for the users icon
+    expect(screen.getByTestId('users-icon')).toBeInTheDocument();
+  });
+
   test('handles users with missing username or colour', () => {
     const testUsers = [
       { username: undefined, colour: '#ff0000' },
       { username: 'Jane', colour: undefined }
     ];
     
-    render(<UserList users={testUsers} />);
+    const { container } = render(<UserList users={testUsers} />);
     
-    // Check for placeholder for missing username
-    expect(screen.getByText('?')).toBeInTheDocument();
-    // Check Jane still renders properly
-    expect(screen.getByText('J')).toBeInTheDocument();
+    // Use container queries for more specific targeting
+    const placeholderIcon = container.querySelector('.user-icon:not([title])');
+    const janeIcon = container.querySelector('.user-icon[title="Jane"]');
+    
+    expect(placeholderIcon).toHaveTextContent('?');
+    expect(janeIcon).toHaveTextContent('J');
   });
   
   test('tooltip contains all users', () => {
@@ -97,9 +124,10 @@ describe('UserList Component', () => {
     // Check tooltip header exists
     expect(screen.getByText('All Users')).toBeInTheDocument();
     
-    // Check all usernames appear in the tooltip
+    // Check all usernames appear in the tooltip (using tooltip-name class)
     testUsers.forEach(user => {
-      expect(screen.getByText(user.username)).toBeInTheDocument();
+      const tooltipName = screen.getByText(user.username);
+      expect(tooltipName).toHaveClass('tooltip-name');
     });
   });
 });

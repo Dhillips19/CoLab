@@ -4,7 +4,7 @@ import authenticateUser from '../middleware/authMiddleware.js';
 
 const userSettingsRouter = express.Router();
 
-// Routes for user settings
+// route to update user colour settings
 userSettingsRouter.put('/update-colour', authenticateUser, updateUserColour);
 
 export default userSettingsRouter;

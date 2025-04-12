@@ -4,16 +4,16 @@ import authenticateUser from '../middleware/authMiddleware.js';
 
 const editorRouter = express.Router();
 
-// Search for users
+// search for users to add as collaborators
 editorRouter.get('/search', authenticateUser, searchUser);
 
-// Get current collaborators
+// get collaborators for a document
 editorRouter.get('/:documentId/collaborators', authenticateUser, getCollaborators);
 
-// Add collaborator
+// add collaborator to a document
 editorRouter.post('/:documentId/collaborators', authenticateUser, addCollaborator);
 
-// Remove collaborator
+// remove collaborator from a document
 editorRouter.delete('/:documentId/collaborators/:userId', authenticateUser, removeCollaborator);
 
 export default editorRouter;

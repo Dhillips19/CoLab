@@ -6,7 +6,9 @@ import '../../styles/LoginRegister.css';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
+// function for the login component
 const Register = () => {
+    // state variables for form data, error messages, success messages, and loading state
     const [formData, setFormData] = useState({
         username: "",
         email: "",
@@ -16,29 +18,36 @@ const Register = () => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    // useNavigate hook to navigate pages
     const navigate = useNavigate();
+
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    // function to handle form submission
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); // prevent default form submission
+        // set error and loading state
         setError("");
         setIsLoading(true);
 
-        // Basic validation
+        // ensure that password and confirm password match
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords don't match");
             setIsLoading(false);
             return;
         }
 
+        // send form data to the server for registration
         try {
             await axios.post("http://localhost:3001/api/auth/register", formData);
-            setSuccess("Account created successfully! You can now login.");
-            setFormData({ username: "", email: "", password: "", confirmPassword: "" });
+            setSuccess("Account created successfully! You can now login."); 
+            setFormData({ username: "", email: "", password: "", confirmPassword: "" }); // reset form data
             
+            // set timeout to navigate to login page after 1 second
             setTimeout(() => {
                 navigate("/login", { state: { message: "Account created successfully! You can now login." } });
             }, 1000);
@@ -50,6 +59,7 @@ const Register = () => {
         }
     };
 
+    // render the registration form
     return (
         <div className='wrapper'>
             <div className='container'>
@@ -58,6 +68,7 @@ const Register = () => {
                     <div className="underline"></div>
                 </div>
 
+                {/* display error or success messages */}
                 {error && <div className="error">{error}</div>}
                 {success && <div className="success">{success}</div>}
 
@@ -126,6 +137,7 @@ const Register = () => {
                     </div>
                 </form>
 
+                {/* display login link */}
                 <div className="account-link">
                     Already have an account?
                     <Link to="/login">Sign in</Link>

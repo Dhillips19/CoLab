@@ -5,55 +5,64 @@ import { faUser, faSignOutAlt, faHome, faKey, faCog} from "@fortawesome/free-sol
 import '../../styles/NavBar.css';
 import { useAuth } from '../../context/AuthContext';
 
+// NavBar component 
 export default function NavBar() {
+    // useAuth hook to access authentication context
     const { isAuthenticated, logout, user } = useAuth();
+
+    // state variables for settings dropdown and user colour
     const [showSettings, setShowSettings] = useState(false);
     const [userColour, setUserColour] = useState(user?.colour || "#3498db");
+
+    // reference to settings dropdown to handle outside clicks
     const settingsRef = useRef(null);
     
-    // Extract first name from user object
+    // extract username from user object
     const username = user?.username?.split(' ')[0] || user?.username || "User";
     
-    // Expanded colour options for user presence
+    // display colour options
     const colourOptions = [
-        "#4285F4", // Google Blue
-        "#F4B400", // Google Yellow
-        "#DB4437", // Google Red
-        "#0F9D58", // Google Green
-        "#8E24AA", // Deep Purple
-        "#FF6D00", // Bright Orange
-        "#1E88E5", // Lighter Blue
-        "#D81B60", // Vibrant Pink
-        "#009688", 
-        "#E53935", 
-        "#43A047", 
-        "#9E9D24", 
-        "#546E7A", 
-        "#6D4C41", 
-        "#795548"
+        "#3498db", // default blue
+        "#e74c3c",
+        "#2ecc71",
+        "#f1c40f",
+        "#9b59b6",
+        "#1abc9c",
+        "#e67e22",
+        "#34495e",
+        "#fd79a8",
+        "#16a085",
+        "#f39c12",
+        "#8e44ad",
+        "#c0392b",
+        "#27ae60",
+        "#2980b9"
     ];
     
-    // Close settings dropdown when clicking outside
     useEffect(() => {
+        // function to handle click outside of settings dropdown
         function handleClickOutside(event) {
             if (settingsRef.current && !settingsRef.current.contains(event.target)) {
                 setShowSettings(false);
             }
         }
-        
+        // add event listener for click outside
         document.addEventListener("mousedown", handleClickOutside);
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
     
-    // Handle colour selection with updated storage key
+    // function to handle colour selection
     const handleColourSelect = async (colour) => {
         try {
+            // set user colour in local state
             setUserColour(colour);
 
+            // get token from local storage
             const token = localStorage.getItem("token");
 
+            // update colour in DB
             const response = await fetch("http://localhost:3001/api/user-settings/update-colour", {
                 method: "PUT",
                 headers: {
@@ -63,9 +72,18 @@ export default function NavBar() {
                 body: JSON.stringify({ colour })
             });
 
+            // check if response is ok and update token in local storage
+            if (!response.ok) {
+                throw new Error("Failed to update colour preference");
+            }
+
+            // parse response data
             const data = await response.json();
+
+            // check if token is present in response
             if (response.status === 200 && data.token) {
                 
+                // update token in local storage
                 localStorage.setItem("token", data.token);
 
                 console.log("Colour preference updated successfully");
@@ -78,6 +96,7 @@ export default function NavBar() {
         }
     };
 
+    // set user colour when user object changes
     useEffect(() => {
         if (user && user.colour)
             setUserColour(user.colour);
@@ -85,7 +104,7 @@ export default function NavBar() {
     
     return (
         <div className='navigation-menu'>
-            {/* Left side - Brand and navigation links */}
+            {/* left section for brand navigation and links */}
             <div className="left-section">
                 <div className="nav-brand">
                     <Link to="/" className="brand-link">
@@ -95,6 +114,7 @@ export default function NavBar() {
                 
                 <nav>
                     <ol className="nav-links">
+                        { /* if logged in display home button, else display login and register */}
                         {isAuthenticated ? (
                             <li><Link to="/"><FontAwesomeIcon icon={faHome} /> Home</Link></li>
                         ) : (
@@ -107,7 +127,7 @@ export default function NavBar() {
                 </nav>
             </div>
             
-            {/* Right side - User info, icon and settings */}
+            {/* right side for user info, setting dropdown and user icon */}
             {isAuthenticated && (
                 <div className="right-section">
                     <div className="user-info">
@@ -128,8 +148,9 @@ export default function NavBar() {
                                         <h3>Settings</h3>
                                     </div>
                                     
-                                    <div className="settings-menu">
-                                        <Link to="/change-password" className="settings-item">
+                                    { /* change password button - not set up yet */}
+                                    <div className="change-password">
+                                        <Link to="/change-password" className="change-password-link">
                                             <FontAwesomeIcon icon={faKey} />
                                             <span>Change Password</span>
                                         </Link>
@@ -138,19 +159,21 @@ export default function NavBar() {
                                     <div className="colour-picker">
                                         <p>Choose your collaboration colour:</p>
                                         <div className="colour-options">
+                                            {/* map through colour options and display them */}
                                             {colourOptions.map((colour, index) => (
                                                 <div 
                                                     key={index}
                                                     className={`colour-option ${colour === userColour ? "selected" : ""}`}
                                                     style={{ backgroundColor: colour }}
-                                                    onClick={() => handleColourSelect(colour)}
+                                                    onClick={() => handleColourSelect(colour)} // handle colour selection
                                                 >
-                                                    {colour === userColour && <div className="colour-selected"></div>}
+                                                    {colour === userColour && <div className="colour-selected"></div>} { /* show selected colour indicator */}
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
                                     
+                                    {/* logout button */}
                                     <div className="settings-footer">
                                         <button onClick={logout} className="logout-button">
                                             <FontAwesomeIcon icon={faSignOutAlt} /> Logout

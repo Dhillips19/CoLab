@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 
+// connect to the MongoDB database using mongoose
 export default async function connectDB() {
     try {
         await mongoose.connect('mongodb+srv://CoLabApplication:9rHzIIiKla6nJ4eo@cluster0.gxib4.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {

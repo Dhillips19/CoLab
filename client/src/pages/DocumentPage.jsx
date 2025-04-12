@@ -1,20 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+
+// import components for the document page
 import Editor from "../components/Editor/Editor";
 import Chat from "../components/Editor/Chat";
 import DocumentTitle from "../components/Editor/DocumentTitle";
 import UserList from "../components/Editor/UserList";
 import ManageCollaborators from "../components/Editor/ManageCollaborators"
 import Export from "../components/Editor/Export";
-import socket from "../socket/socket";
+
+// import socket instance from socket.js
+import socket from "../socket/socket"; 
+
 import "../styles/DocumentPage.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 
 export default function DocumentPage() {
+    // get document ID from URL
     const {documentId} = useParams();
+
+    // useNavigate hook to navigate pages
     const navigate = useNavigate();
+
+    // state variables
     const [username, setUsername] = useState("");
     const [isDocumentOwner, setIsDocumentOwner] = useState(false);
     const [colour, setColour] = useState("");
@@ -22,10 +32,14 @@ export default function DocumentPage() {
     const [showManageCollaborators, setShowManageCollaborators] = useState(false);
     const [documentLoading, setDocumentLoading] = useState(true);
     const [error, setError] = useState("");
+
+    // refs for DOM elements
     const collaboratorRef = useRef(null);
     const quillRef = useRef(null);
     const titleRef = useRef(null);
 
+    // function to verify the document id in url and check if user has access to it
+    // also sets up socket connection
     useEffect(() => {
         const verifyDocument = async () => {
             try {
@@ -77,6 +91,7 @@ export default function DocumentPage() {
                     const token = localStorage.getItem("token");
                     if (token) {
                         try {
+                            // decode token to get username and colour
                             const decoded = jwtDecode(token);
                             setUsername(decoded.username || "Anonymous");
                             setColour(decoded.colour || "3498db");
@@ -90,13 +105,15 @@ export default function DocumentPage() {
                                 console.log("Socket not connected, connecting now");
                                 socket.connect();
                             }
-            
+                            
+                            // remove any previous listeners to avoid duplicate events
                             socket.off("documentError");
                             socket.off("updateUsers");
                             socket.off("initialState");
                             socket.off("updateTitle");
                             socket.off("loadMessages");
                             
+                            // set up listener for document errors
                             socket.on("documentError", (error) => {
                                 if(error.code === "DOCUMENT_NOT_FOUND") {
                                     navigate("/document-not-found", { state: { documentId } });
@@ -104,8 +121,9 @@ export default function DocumentPage() {
                                     setError("You don't have permission to access this document");
                                 }
                             });
-            
-                            socket.emit("joinDocumentRoom", { 
+                            
+                            // emit joinDocumentRoom event to join the document room
+                            socket.emit("joinDocumentRoom", {
                                 documentId, 
                                 username: decoded.username, 
                                 colour: decoded.colour
@@ -115,7 +133,8 @@ export default function DocumentPage() {
                             console.error("Error decoding token:", error);
                         }
                     }
-            
+                    
+                    // set up listener to update users in the document room
                     socket.on("updateUsers", (users) => {
                         console.log("Active users:", users);
                         setActiveUsers(users);
@@ -142,31 +161,34 @@ export default function DocumentPage() {
         verifyDocument();
     }, [documentId, navigate]);
 
+    // handle leaving document room when user closes the tab or navigates away
     useEffect(() => {
-        // This function runs when the user is about to leave the page
+        // fucntion to handle beforeunload event
         const handleBeforeUnload = () => {
             console.log(`Page unloading, leaving document room: ${documentId}`);
             socket.emit("leaveDocumentRoom", documentId);
         };
     
-        // Add the event listener for page unload
+        // add event listener for beforeunload event
         window.addEventListener("beforeunload", handleBeforeUnload);
         
-        // Clean up the event listener when component unmounts
+        // clean event listener
         return () => {
             window.removeEventListener("beforeunload", handleBeforeUnload);
         };
     }, [documentId]);
 
+    // function to leave the document room when user clicks on the brand link
     const leaveDocument = () => {
         socket.emit("leaveDocumentRoom", documentId);
     }
 
+    // function to toggle the manage collaborators panel
     const toggleCollaboratorSearch = () => {
         setShowManageCollaborators(prev => !prev);
     }
 
-    // Close collaborator search when clicking outside
+    // function to close the manage collaborators panel when clicking outside of it
     useEffect(() => {
         function handleClickOutside(event) {
             if (collaboratorRef.current && 
@@ -176,7 +198,10 @@ export default function DocumentPage() {
             }
         }
         
+        // add event listener for clicks outside the panel
         document.addEventListener("mousedown", handleClickOutside);
+
+        // clean event listener
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
@@ -193,7 +218,7 @@ export default function DocumentPage() {
         );
     }
 
-    // on document error, display the error and a return to home
+    // on document error, display the error and a return to home button
     if (error) {
         return (
             <div className="document-page">
@@ -207,15 +232,17 @@ export default function DocumentPage() {
 
     return (
         <div className="document-page">
-            {/* New refactored header */}
+            {/* document page specific header */}
             <div className="document-header">
 
+                {/* brand link to return to home page */}
                 <div className="brand-container">
                     <Link to="/" className="brand-link" onClick={leaveDocument}>
                         <span className="brand-text">CoLab</span>
                     </Link>
                 </div>
 
+                {/* left of document header for document title and other buttons */}
                 <div className="header-left">                    
                     <div className="top-row">
                         <div className="document-title-container">
@@ -229,6 +256,7 @@ export default function DocumentPage() {
                     </div>
                 </div>
                 
+                {/* right of document header for user list, manage collaborators button (only for owner),and current user icon */}
                 <div className="header-right">
                     <div className="user-list-container">
                         <UserList users={activeUsers.filter(user => user.username !== username)} />
@@ -253,7 +281,7 @@ export default function DocumentPage() {
                 
             </div>
             
-            {/* Collaborator search panel */}
+            {/* manage collabortator panel */}
             <div 
                 className={`collaborator-management-container ${showManageCollaborators ? 'open' : ''}`}
                 ref={collaboratorRef}
@@ -270,14 +298,14 @@ export default function DocumentPage() {
                 <ManageCollaborators documentId={documentId} />
             </div>
             
-            {/* Content area */}
+            {/* editor component */}
             <div className="content-container">
                 <div className="editor-wrapper">
                     <Editor documentId={documentId} username={username} colour={colour} quillRef={quillRef} />
                 </div>
             </div>
             
-            {/* Chat component */}
+            {/* chat component */}
             <Chat documentId={documentId} username={username} />
         </div>
     );

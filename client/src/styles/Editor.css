@@ -1,15 +1,14 @@
-
+/* editor styling */
 .editor-container {
     position: relative;
 } 
 
-/* Make toolbar sticky instead of fixed */
 .editor-container .ql-toolbar {
     position: sticky;
     top: 7rem;
     width: 100%;
     background-color: rgb(223, 225, 226);
-    z-index: 90; /* Below header but above content */
+    z-index: 90; 
     display: flex;
     justify-content: center;
     border-color: rgb(223, 225, 226);
@@ -32,12 +31,12 @@
     margin: 1rem;
     box-shadow: 0 0 5px 0 rgba(0, 0, 0, .5);
     background-color: white;
-  }
+}
   
 .editor-container .ql-container.ql-snow {
-border: none;
-display: flex;
-justify-content: center;
+    border: none;
+    display: flex;
+    justify-content: center;
 }
   
 .editor-container .ql-toolbar.ql-snow {
